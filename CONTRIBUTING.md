@@ -6,8 +6,15 @@ change affects the result. Be explicit about uncertainty and limitations.
 
 Each Action lives under `actions/<name>/` and owns its manifest, implementation,
 configuration, documentation and tests. Put executable GitHub workflows under the
-root `.github/workflows/` directory. Keep release tags and image names scoped to
-the Action so one release does not imply that every tool changed.
+root `.github/workflows/` directory. Distribution workflow templates belong under
+`distribution/<name>/`; they become executable only when exported to the dedicated
+Marketplace repository. All infrastructure changes also require a PR here.
+
+Main requires pull requests, passing CI and resolved review conversations. Do not
+push directly to main. With one maintainer, no independent approval is required;
+add an approval requirement when a second maintainer is available. Release PRs
+update `pyproject.toml` and `CHANGELOG.md` together. See the
+[release process](distribution/arc42-tqi/DISTRIBUTION.md).
 
 For arc42 TQI, follow its [development guidance](actions/arc42-tqi/CONTRIBUTING.md).
 Run checks from `actions/arc42-tqi/`. Changes to scoring require updated scoring

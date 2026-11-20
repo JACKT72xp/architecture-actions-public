@@ -1,0 +1,79 @@
+name: Validate distribution
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  source-and-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: Verify against canonical source
+        run: |
+          git clone --no-checkout https://github.com/JACKT72xp/architecture-actions-public.git "$RUNNER_TEMP/upstream"
+          source_sha="$(python -c 'import json; print(json.load(open("UPSTREAM.json"))["commit"])')"
+          [[ "$source_sha" =~ ^[0-9a-f]{40}$ ]] || exit 1
+          git -C "$RUNNER_TEMP/upstream" merge-base --is-ancestor "$source_sha" origin/main
+          python .github/scripts/sync_upstream.py --source "$RUNNER_TEMP/upstream" --check
+      - run: python -m pip install -e '.[test]' pip-audit==2.10.0
+      - run: python -m pytest -q
+      - run: python -m unittest discover -s .github/tests -v
+      - run: python -m ruff check src tests scripts .github/scripts .github/tests
+      - run: python -m mypy src
+      - run: python -m pip wheel --no-deps . --wheel-dir dist
+      - run: python -m pip_audit -r requirements-runtime.txt --no-deps --disable-pip
+  action-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 0
+      - uses: ./
+        id: tqi
+        with:
+          docs-path: tests/fixtures/mature/docs
+          adr-path: tests/fixtures/mature/docs/adr
+          min-tqi: '90'
+          fail-on-severity: high
+      - name: Check real Action outputs
+        env:
+          SCORE: ${{ steps.tqi.outputs.tqi-score }}
+          MATURITY: ${{ steps.tqi.outputs.maturity-level }}
+          REPORT: ${{ steps.tqi.outputs.report-path }}
+          CLAIMS: ${{ steps.tqi.outputs.claims-path }}
+          PROMPTS: ${{ steps.tqi.outputs.drift-prompts-dir }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          assert float(os.environ['SCORE']) == 100
+          assert os.environ['MATURITY'] == 'L4'
+          report = json.loads(Path(os.environ['REPORT']).read_text())
+          assert report['quality_gate']['passed']
+          assert report['semantic_enrichment']['status'] == 'disabled'
+          assert Path(os.environ['CLAIMS']).is_file()
+          assert len(list(Path(os.environ['PROMPTS']).glob('*.md'))) == 3
+          PY
+  image-smoke:
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            platform: linux/amd64
+          - runner: ubuntu-24.04-arm
+            platform: linux/arm64
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -e '.[test]'
+      - run: docker build -t arc42-tqi:validation .
+      - run: python scripts/smoke_image.py --image arc42-tqi:validation --platform '${{ matrix.platform }}'

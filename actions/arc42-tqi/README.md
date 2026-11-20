@@ -35,8 +35,8 @@ PYTHONPATH=src python -m arc42_tqi.cli \
 Replace `COMMIT_SHA` below with an actual full commit SHA from this repository.
 The subdirectory is part of the Action reference. No version tag or public image
 is assumed. See the [repository guide](../../README.md) for fork instructions.
-The Docker Action requires a Linux runner. Release manifests will reference an
-immutable, prebuilt GHCR image; the source manifest builds the local Dockerfile.
+The Docker Action requires a Linux runner and builds the bundled Dockerfile.
+Marketplace versions are published from the dedicated distribution repository.
 
 ```yaml
 name: Architecture quality
@@ -230,7 +230,8 @@ Apache-2.0 licensed. The Action has not been registered in GitHub Marketplace.
 
 ## Repository layout
 
-Run development commands from `actions/arc42-tqi/`. Workflows live at the repository
-root in `.github/workflows/`; release tags are scoped as `arc42-tqi/vMAJOR.MINOR.PATCH`
-and images as `ghcr.io/OWNER/REPOSITORY-arc42-tqi`. Forks derive their own namespace
-from GitHub context. The source Action builds its adjacent Dockerfile automatically.
+Run development commands from `actions/arc42-tqi/` in the main repository.
+All contributions go through PRs there, including distribution templates under
+`distribution/arc42-tqi/`. Marketplace versions (`vMAJOR.MINOR.PATCH`) are published
+from `JACKT72xp/arc42-tqi-action` after exporting a reviewed upstream commit.
+See the [release checklist](docs/releasing.md).
