@@ -28,7 +28,7 @@ def run_git(root: Path, *args: str, day: int = 1) -> str:
 
 def test_history_requires_related_recent_evidence(tmp_path: Path) -> None:
     run_git(tmp_path, "init")
-    config = load_config(tmp_path, None)["history"]
+    config = load_config(tmp_path, None, {"profile": "extended"})["history"]
     config.update(hotspot_changes=3, coupling_min_support=2,
                   associations={"view.md": ["related.md"]})
     for day, names in enumerate([
@@ -76,7 +76,7 @@ def test_shallow_history_is_unavailable(tmp_path: Path) -> None:
     run_git(source, "commit", "--allow-empty", "-m", "Initial")
     clone = tmp_path / "clone"
     run_git(tmp_path, "clone", "--depth", "1", source.as_uri(), str(clone))
-    result = evolution(clone, set(), set(), load_config(clone, None)["history"])
+    result = evolution(clone, set(), set(), load_config(clone, None, {"profile": "extended"})["history"])
     assert result["status"] == "shallow"
     assert result["hotspots"] == []
     assert "Shallow" in result["reason"]

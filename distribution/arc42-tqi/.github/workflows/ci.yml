@@ -39,6 +39,7 @@ jobs:
         with:
           docs-path: tests/fixtures/mature/docs
           adr-path: tests/fixtures/mature/docs/adr
+          review-profile: extended
           min-tqi: '90'
           fail-on-severity: high
       - name: Check real Action outputs

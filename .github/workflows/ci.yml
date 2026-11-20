@@ -34,6 +34,7 @@ jobs:
         with:
           docs-path: actions/arc42-tqi/tests/fixtures/mature/docs
           adr-path: actions/arc42-tqi/tests/fixtures/mature/docs/adr
+          review-profile: extended
           min-tqi: '90'
           fail-on-severity: high
       - name: Assert final Action outputs and artifacts

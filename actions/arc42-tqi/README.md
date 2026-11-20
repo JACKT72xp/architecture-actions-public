@@ -14,6 +14,15 @@ No private repositories, vector databases, LLM keys, cloud credentials, or hoste
 service are required. This project implements its own parsers and rules; it does
 not embed docToolchain, log4brains, CodeScene, or ArchUnit.
 
+## Review scope and rigor
+
+The default `arc42` profile scores structure and decision evidence. Volatility,
+Git history, and audit readiness are excluded from its score and gate. Configure
+`review-rigor`, `architecture-type`, `c4-level`, and `deployment-view` in the Action.
+See [review profiles and RAG boundaries](docs/review-profiles.md) for evidence
+mapping, examples, and migration from the `extended` legacy rubric. This is an
+unreleased scoring change; published v0.1.0 behavior is unchanged.
+
 ## Quick start
 
 Install Python 3.12+ and run from the repository being assessed:
@@ -55,6 +64,11 @@ jobs:
         with:
           docs-path: docs
           adr-path: docs/adr
+          review-profile: arc42
+          review-rigor: standard
+          architecture-type: tactical
+          c4-level: component
+          deployment-view: required
           min-tqi: '70'
           fail-on-severity: high
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -78,7 +92,7 @@ even when a quality gate fails, alongside the existing machine-readable evidence
 
 The report explains the score's weighted contributions, why the gate passed or
 failed, priority documentation risks and next steps, all 12 sections, structured
-evidence coverage, every metric, and every finding with its source and remediation.
+evidence coverage, every metric, and every finding with its source, review implication, concrete task, and completion criteria.
 It distinguishes parser recognition gaps from verified architecture defects and
 labels optional semantic observations separately. It does not rescore the analysis
 or certify implementation conformance. `summary.md` remains a compact CI overview.
@@ -103,6 +117,11 @@ two human-report files. It does not modify the saved JSON, claims, or audit prom
 | `config-path` | empty | Auto-discover `.arc42-tqi.yml`; explicit missing path is an error |
 | `output-dir` | `.arc42-tqi` | Dedicated artifact directory inside the checkout |
 | `min-tqi` | empty | Override config minimum; default config is 0 |
+| `review-profile` | empty → arc42 | `arc42` or legacy `extended` |
+| `review-rigor` | empty → standard | `advisory`, `standard`, or `strict` |
+| `architecture-type` | empty → tactical | `strategic`, `tactical`, or `transition` |
+| `c4-level` | empty → component | `context`, `container`, or `component` |
+| `deployment-view` | empty → required | `required` or `not-required` |
 | `fail-on-severity` | empty | Override `none`, `critical`, `high`, `medium`, or `low` |
 | `llm-provider` | `none` | `none` or opt-in `http-json` semantic adapter |
 | `llm-model` | empty | Adapter model identifier |
@@ -128,10 +147,12 @@ to run an untrusted checkout. The deterministic mode needs only `contents: read`
 
 | Dimension | Default weight | Evidence |
 | --- | ---: | --- |
-| Structure | 25% | Twelve canonical sections, critical-section depth, placeholders, local links, headings |
-| Decisions | 25% | ADR fields, lifecycle, alternatives/consequences, quality attributes, section links |
-| Volatility | 25% | Classified change axes, information-hiding boundaries, impact, mitigation, Git hotspots |
-| Drift readiness | 25% | Six claim categories, typed completeness, provenance, atomic checks, referential integrity |
+| Structure | 50% | Twelve canonical sections, critical-section depth, placeholders, local links, headings |
+| Decisions | 50% | ADR fields, lifecycle, alternatives/consequences, quality attributes, section links |
+| Volatility (extended only) | 0% | Classified change axes, information-hiding boundaries, impact, mitigation, Git hotspots |
+| Drift readiness (extended only) | 0% | Six claim categories, typed completeness, provenance, atomic checks, referential integrity |
+
+The explicit `extended` profile uses 25% for each of the four dimensions.
 
 Every metric exposes its numerator, denominator, ratio, weight, and definition.
 See [the exact scoring specification](docs/scoring.md). Repository overrides are

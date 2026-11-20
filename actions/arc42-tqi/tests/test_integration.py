@@ -60,6 +60,7 @@ def test_mature_artifacts_schemas_and_reproducibility(mature: Path, monkeypatch:
 
 def test_poor_fixture_fails_after_export(tmp_path: Path) -> None:
     shutil.copytree(ROOT / "tests/fixtures/poor", tmp_path, dirs_exist_ok=True)
+    (tmp_path / ".arc42-tqi.yml").write_text("review: {profile: extended}\n")
     assert main(["--repo-root", str(tmp_path), "--min-tqi", "70"]) == 1
     report = json.loads((tmp_path / ".arc42-tqi/tqi-report.json").read_text())
     assert report["maturity_level"] == "L1"

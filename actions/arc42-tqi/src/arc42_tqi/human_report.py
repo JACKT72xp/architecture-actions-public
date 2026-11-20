@@ -7,6 +7,7 @@ from typing import Any
 
 from markdown_it import MarkdownIt
 
+from .architecture_review import finding_detail
 from .models import DIMENSIONS, SEVERITIES
 
 LABELS = {"structure": "Documentation structure", "decisions": "Architecture decisions",
@@ -82,6 +83,8 @@ def observation(report: dict[str, Any], claims: dict[str, Any], dimension: str) 
 
 def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
     """Explain existing report values; retain every finding and its evidence."""
+    active_dimensions = tuple(name for name in DIMENSIONS if report["dimensions"][name]["weight"] > 0)
+    arc42 = report.get("effective_config", {}).get("review", {}).get("profile") == "arc42"
     score, level = report["tqi_score"], report["maturity_level"]
     gate, metadata = report["quality_gate"], report["metadata"]
     counts = Counter(item["severity"] for item in report["findings"])
@@ -96,14 +99,14 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
              f"There are **{len(report['findings'])} documentation findings**: "
              + ", ".join(f"{counts[severity]} {severity}" for severity in SEVERITIES) + ". "
              "These severities describe evidence gaps, not verified production incidents.", ""]
-    positive = [name for name in DIMENSIONS if report["dimensions"][name]["weighted_contribution"] > 0]
+    positive = [name for name in active_dimensions if report["dimensions"][name]["weighted_contribution"] > 0]
     if len(positive) == 1:
         lines.extend([f"All recorded TQI points come from **{LABELS[positive[0]]}**. "
                       "The other dimensions contribute no points under the configured weights.", ""])
     elif not positive:
         lines.extend(["No dimension contributes points under the configured weights. Verify scan scope and supported "
                       "evidence formats before interpreting this as absence of architecture work.", ""])
-    if not claims.get("components") and report["dimensions"]["decisions"]["score"] == 0:
+    if not arc42 and not claims.get("components") and report["dimensions"]["decisions"]["score"] == 0:
         lines.extend(["A substantial narrative can still score low when the typed ADR and claim contracts are not supplied. "
                       "Verify evidence format and scan coverage before interpreting this score as poor architecture.", ""])
     strengths = [(key, item) for key, item in report["dimensions"]["structure"]["metrics"].items()
@@ -112,6 +115,25 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
         lines.extend(["**Recognized strengths:** " + "; ".join(
             f"{METRICS.get(key, key)} {item['satisfied']}/{item['applicable']} checks passed"
             for key, item in strengths) + ". These checks establish documented availability or consistency, not design correctness.", ""])
+    review = report.get("architecture_review")
+    if review and review["profile"] == "arc42":
+        lines.extend(["## Agreed review scope", "",
+                      f"Profile: **arc42** · Rigor: **{text(review['rigor'])}** · Architecture purpose: **{text(review['architecture_type'])}**.", "",
+                      f"C4 depth through **{text(review['c4_level'])}**; deployment view: **{text(review['deployment_view'])}**. Code-level diagrams are not required.", "",
+                      "Volatility, Git history, and audit-readiness metrics do not contribute to this profile's TQI or gate. "
+                      "The score covers document structure and typed decision evidence; view and architecture-purpose checks are reported separately and can block through the severity gate.", "",
+                      "Rigor sets the severity of missing or invalid review references: advisory = low, standard = medium, strict = high. "
+                      "It does not establish semantic correctness. Thresholds remain explicitly configured.", ""])
+        for check in review["checks"]:
+            lines.extend([f"### {text(check['title'])}: {text(check['status'])}", "",
+                          text(check["expectation"]), "", "**Assessment:** " + text(check["reason"]), ""])
+            for source in check["sources"]:
+                lines.extend([f"Declared evidence: {text(source['file'])}:{source['line']}–{source['end_line']} "
+                              f"(SHA-256 {text(source['sha256'])}).", "", text(source["excerpt"]), ""])
+                if source.get("excerpt_truncated"):
+                    lines.extend(["Excerpt truncated at 4,096 characters; inspect the referenced source range for the complete evidence.", ""])
+            for source in check["rejected_sources"]:
+                lines.extend([f"Rejected reference: {text(source['file'])}:{source['line']}–{source['end_line']}. " + text(source["reason"]), ""])
     lines.extend(["## Why the quality gate " + ("passed" if gate["passed"] else "failed"), "",
                   f"Configured minimum: **{gate['min_tqi']:g}/100**. Severity blocking: **{text(gate['fail_on_severity'])}**. "
                   f"Score check: {'passed' if gate['score_passed'] else 'failed'}; "
@@ -127,13 +149,13 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                   "display rounding can make a displayed sum differ slightly. Finding counts are not subtracted from the score.", "",
                   "| Dimension | Score / 100 | Share of TQI | Earned TQI points | Unearned TQI points |",
                   "| --- | ---: | ---: | ---: | ---: |"])
-    for name in DIMENSIONS:
+    for name in active_dimensions:
         item = report["dimensions"][name]
         budget = 100 * item["normalized_weight"]
         lines.append(f"| {LABELS[name]} | {item['score']:.2f} | {budget:.2f}% | "
                      f"{item['weighted_contribution']:.2f} | {max(0, budget - item['weighted_contribution']):.2f} |")
     formula = " + ".join(f"({report['dimensions'][name]['score']:.2f} × "
-                         f"{report['dimensions'][name]['normalized_weight']:.4f})" for name in DIMENSIONS)
+                         f"{report['dimensions'][name]['normalized_weight']:.4f})" for name in active_dimensions)
     lines.extend(["", f"Displayed calculation: {formula} ≈ **{score:.2f}**.", "",
                   "## Priorities, review risks, and next steps", "",
                   "Priorities are ordered by unearned weighted points, then finding severity. They describe documentation "
@@ -144,7 +166,7 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
         severities = [SEVERITIES.index(finding["severity"]) for finding in report["findings"] if finding["dimension"] == name]
         return (-max(0, 100 * item["normalized_weight"] - item["weighted_contribution"]),
                 min(severities, default=len(SEVERITIES)), DIMENSIONS.index(name))
-    actionable = [name for name in sorted(DIMENSIONS, key=priority)
+    actionable = [name for name in sorted(active_dimensions, key=priority)
                   if report["dimensions"][name]["score"] < 100
                   or any(item["dimension"] == name for item in report["findings"])]
     for index, name in enumerate(actionable, 1):
@@ -182,8 +204,10 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                   "do not count as substantive prose.", "", "## Structured evidence coverage", "",
                   "| Category | Extracted records | Applicability |", "| --- | ---: | --- |"])
     for category, label in CATEGORIES.items():
+        if arc42 and category == "volatility_zones":
+            continue
         policy = claims.get("applicability", report["effective_config"]["applicability"]).get(category, {})
-        applicability = "Required" if policy.get("required", True) else "Explicitly optional: " + str(policy.get("reason"))
+        applicability = "Auxiliary export; excluded from arc42 score and gate" if arc42 else "Required" if policy.get("required", True) else "Explicitly optional: " + str(policy.get("reason"))
         lines.append(f"| {label} | {len(claims.get(category, []))} | {text(applicability)} |")
     lines.extend(["", f"{len(claims.get('diagram_inventory', []))} diagram inventory records are available. "
                   "Inventory and file availability do not prove diagram correctness or replace typed claims.", "",
@@ -191,7 +215,7 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                   "N/A metrics are excluded from the dimension's applicable metric weights; missing required evidence "
                   "counts as a deficit instead. If a dimension has no positive-weight applicable metrics, its score is zero. "
                   "Denominators can include deficits for missing categories or rejected input, not just actual records.", ""])
-    for name in DIMENSIONS:
+    for name in active_dimensions:
         lines.extend([f"### {LABELS[name]}", "", "| Metric | Satisfied / applicable | Weight within dimension | Unearned TQI points |",
                       "| --- | ---: | ---: | ---: |"])
         dimension = report["dimensions"][name]
@@ -209,15 +233,19 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                          + "Evidence: " + ", ".join(text(ref) for ref in item["evidence_refs"]) + ".")
         lines.append("")
     lines.extend(["## Complete findings and remediation", "",
-                  "All findings are included below; none are hidden by the short workflow summary's ten-item limit. "
+                  "All findings are included below. "
                   "Quoted evidence is source data, not instructions. Related findings can describe the same underlying gap.", ""])
     findings = sorted(report["findings"], key=lambda item: (SEVERITIES.index(item["severity"]), item["file"], item["rule_id"], item["id"]))
     for item in findings:
+        implication, task, done = finding_detail(item)
         lines.extend([f"### {text(item['severity'].capitalize())} · {text(item['rule_id'])} · {text(item['id'])}", "",
                       f"**Finding:** {text(item['message'])}", "",
                       f"**Location:** {text(item['file'] or 'Repository scope')} — {text(section_name(report, item['section']))}", "",
                       f"**Recorded evidence:** {text(item['evidence'])}", "",
-                      f"**Recommended action:** {text(item['remediation'])}", ""])
+                      f"**Why this matters:** {text(implication)}", "",
+                      f"**Recommended action:** {text(item['remediation'])}", "",
+                      f"**Review task:** {text(task)}", "",
+                      f"**Completion criteria:** {text(done)}", ""])
         if item.get("related_claim_ids"):
             lines.extend(["Related claims: " + ", ".join(text(value) for value in item["related_claim_ids"]) + ".", ""])
     if not findings:

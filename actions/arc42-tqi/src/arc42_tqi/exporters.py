@@ -37,12 +37,20 @@ def summary(report: dict[str, Any], output: str) -> str:
              f"**TQI: {report['tqi_score']:.2f}/100 · {report['maturity_level']}**", "",
              "| Dimension | Score | Weight |", "| --- | ---: | ---: |"]
     for name, dimension in report["dimensions"].items():
+        if not dimension["weight"]:
+            continue
         lines.append(f"| {name} | {dimension['score']:.2f} | {dimension['weight']} |")
     lines.extend(["", f"Artifacts: {escaped(output)}", "",
                   f"Gate: **{'passed' if report['quality_gate']['passed'] else 'failed'}**; minimum TQI {report['quality_gate']['min_tqi']}; severity threshold {report['quality_gate']['fail_on_severity']}.", "",
-                  "### Actionable findings", ""])
-    for item in report["findings"][:10]:
-        lines.append(f"- **{item['severity']} · {escaped(item['rule_id'])}** — {escaped(item['message'])} ({escaped(item['file'] or 'repository')}). {escaped(item['remediation'])}")
+                  "### Findings and next steps", ""])
+    used_bytes = len("\n".join(lines).encode())
+    for index, item in enumerate(report["findings"]):
+        entry = f"- **{item['severity']} · {escaped(item['rule_id'])}** — {escaped(item['message'])} ({escaped(item['file'] or 'repository')}). Evidence: {escaped(item['evidence'])}. {escaped(item['remediation'])}"
+        used_bytes += len(entry.encode()) + 1
+        if used_bytes > 900_000:
+            lines.append(f"{len(report['findings']) - index} additional findings exceed the workflow summary size budget; all are included in the downloadable human report.")
+            break
+        lines.append(entry)
     if not report["findings"]:
         lines.append("No deterministic findings.")
     lines.extend(["", "Download the workflow artifact and open **human-report.html** in a browser or **human-report.md** for the full explanation, risks, and remediation plan.", "", "L4 measures documentation readiness; it does not certify implementation conformance.", ""])

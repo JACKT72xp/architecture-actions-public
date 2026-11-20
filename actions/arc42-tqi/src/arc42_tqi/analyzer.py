@@ -12,6 +12,7 @@ from urllib.parse import unquote, urlsplit
 
 from . import __version__
 from .adrs import parse_adrs
+from .architecture_review import assess_review
 from .claims import extract_claims
 from .config import InputError, load_config, safe_path, validate
 from .documents import DIAGRAM_FORMATS, DocumentReader
@@ -27,12 +28,13 @@ def canonical_json(value: Any) -> str:
 
 def analyze_repository(root: Path, docs_path: str = "docs", adr_path: str = "docs/adr",
                        diagrams_path: str = "", config_path: str = "", output_dir: str = ".arc42-tqi",
-                       min_tqi: float | None = None, fail_on_severity: str | None = None
+                       min_tqi: float | None = None, fail_on_severity: str | None = None,
+                       review_overrides: dict[str, str] | None = None
                        ) -> tuple[dict[str, Any], dict[str, Any]]:
     root = root.resolve()
     if not root.is_dir():
         raise InputError("Repository root does not exist")
-    config = load_config(root, config_path or None)
+    config = load_config(root, config_path or None, review_overrides)
     if min_tqi is not None:
         config["min_tqi"] = min_tqi
     if fail_on_severity is not None:
@@ -87,14 +89,18 @@ def analyze_repository(root: Path, docs_path: str = "docs", adr_path: str = "doc
         "drift": sum(item.rule_id == "CLAIM_PARSE" for item in claim_findings),
     }
     for dimension, deficit in parse_deficits.items():
-        if deficit:
+        if deficit and not (dimension == "drift" and config["review"]["profile"] == "arc42"):
             for name, metric in metrics[dimension].items():
                 if name != "coverage":
                     metrics[dimension][name] = replace(
                         metric, applicable=metric.applicable + deficit,
                         description=metric.description + "; each rejected input document/block adds one deficit",
                     )
-    all_findings = {item.id: item for item in tree.findings + adr_findings + claim_findings + rule_findings}
+    review, review_findings = assess_review(tree, config)
+    scoped_findings = tree.findings + adr_findings + claim_findings + rule_findings
+    if config["review"]["profile"] == "arc42":
+        scoped_findings = [item for item in scoped_findings if item.dimension not in {"volatility", "drift"}]
+    all_findings = {item.id: item for item in scoped_findings + review_findings}
     findings = sorted(all_findings.values(), key=lambda item: (SEVERITIES.index(item.severity), item.file, item.rule_id, item.id))
     inventory: list[dict[str, Any]] = [{"file": file, "sha256": hashlib.sha256(text.encode()).hexdigest(), "bytes": len(text.encode()),
                   "format": "markdown" if Path(file).suffix.lower() in {".md", ".markdown"} else "asciidoc"}
@@ -117,7 +123,8 @@ def analyze_repository(root: Path, docs_path: str = "docs", adr_path: str = "doc
             pass
     claims.update(metadata=repo_metadata, applicability=config["applicability"])
     report: dict[str, Any] = {
-        "schema_version": "1.0", "scoring_version": "1.0",
+        "schema_version": "1.1", "scoring_version": "2.0" if config["review"]["profile"] == "arc42" else "1.0",
+        "architecture_review": review,
         "tool": {"name": "arc42-tqi-action", "version": __version__, "python_version": platform.python_version(),
                  "git_version": git_version},
         "metadata": repo_metadata, **calculate(metrics, config), "conformance_status": "not_evaluated",
@@ -129,12 +136,18 @@ def analyze_repository(root: Path, docs_path: str = "docs", adr_path: str = "doc
             "Git signals are file-level; edits within a combined arc42 file cannot prove that its risk section was reviewed.",
         ],
     }
+    if config["review"]["profile"] == "arc42":
+        report["limitations"] = tree.limitations + [
+            "TQI measures documentation evidence, not architecture correctness or implementation conformance.",
+            "Volatility, Git evolution, and structured audit claims are excluded from this profile's score and gate.",
+            "Review evidence references establish availability, not semantic correctness or diagram topology.",
+        ]
     if history["status"] not in {"available", "disabled"}:
         report["diagnostics"].append({"code": "HISTORY_" + history["status"].upper(), "level": "warning",
                                       "message": history["reason"], "remediation": "Use actions/checkout@v4 with fetch-depth: 0."
                                       if history["status"] == "shallow" else "Inspect Git availability and configured history limits."})
     for dimension, details in report["dimensions"].items():
-        if not any(item["normalized_weight"] for item in details["metrics"].values()):
+        if details["weight"] and not any(item["normalized_weight"] for item in details["metrics"].values()):
             report["diagnostics"].append({"code": "NO_APPLICABLE_METRICS", "level": "warning",
                                           "message": f"{dimension} has no positive-weight applicable metrics; score is zero.",
                                           "remediation": "Review applicability and metric weights."})

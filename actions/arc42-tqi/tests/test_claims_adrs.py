@@ -26,13 +26,13 @@ def test_explicit_claim_provenance_and_adr_links(mature: Path) -> None:
 
 def test_controlled_language_does_not_invent_components(tmp_path: Path) -> None:
     (tmp_path / "arc.md").write_text('## 5. Building Block View\n`API` must not depend on `DB` via `SQL` (sync) because boundaries matter.\n')
-    tree = DocumentReader(tmp_path, load_config(tmp_path, None)).analyze(tmp_path)
+    tree = DocumentReader(tmp_path, load_config(tmp_path, None, {"profile": "extended"})).analyze(tmp_path)
     claims, findings = extract_claims(tree, [])
     assert not findings
     assert claims["components"] == []
     assert claims["dependencies"][0]["allowed"] is False
     assert claims["dependencies"][0]["target"] == "DB"
-    metrics, findings = assess(tree, [], claims, {"status": "unavailable", "reason": "No history", "hotspots": [], "temporal_couplings": []}, load_config(tmp_path, None))
+    metrics, findings = assess(tree, [], claims, {"status": "unavailable", "reason": "No history", "hotspots": [], "temporal_couplings": []}, load_config(tmp_path, None, {"profile": "extended"}))
     assert metrics["drift"]["integrity"].satisfied == 0
     assert any(item.rule_id == "CLAIM_INTEGRITY" for item in findings)
 

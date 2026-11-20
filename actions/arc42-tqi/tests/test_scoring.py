@@ -16,7 +16,7 @@ def test_maturity_boundaries(score: float, expected: str) -> None:
 
 
 def test_weighted_formula_and_na(tmp_path: Path) -> None:
-    config = load_config(tmp_path, None)
+    config = load_config(tmp_path, None, {"profile": "extended"})
     metrics = {dimension: {name: Metric(1, 2, "half") for name in weights} for dimension, weights in config["metrics"].items()}
     metrics["structure"]["coverage"] = Metric(1, 1, "full")
     metrics["volatility"]["evolution"] = Metric(0, 0, "unavailable")

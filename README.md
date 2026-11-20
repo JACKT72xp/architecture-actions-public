@@ -19,7 +19,10 @@ system evolves. Fork them, challenge their assumptions, and share what you learn
 | arc42 Technical Quality Index | [`actions/arc42-tqi`](actions/arc42-tqi/) | Implemented; deterministic documentation scoring, claims and audit prompts |
 | Volatility analysis | Reserved for a future independent Action | Planned; no standalone Action is available yet |
 
-The arc42 Action already measures documented volatility as one scoring dimension.
+The default arc42 profile excludes volatility from its score and gate. The legacy
+`extended` profile retains the original volatility checks for compatibility.
+See [review profiles](actions/arc42-tqi/docs/review-profiles.md) for configurable
+rigor, architecture purpose, C4 depth, and deployment expectations.
 The planned volatility Action will have its own scope, implementation and release;
 this repository does not present it as finished.
 

@@ -27,10 +27,16 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "1.0"
+      "enum": [
+        "1.0",
+        "1.1"
+      ]
     },
     "scoring_version": {
-      "const": "1.0"
+      "enum": [
+        "1.0",
+        "2.0"
+      ]
     },
     "tool": {
       "type": "object",
@@ -2074,27 +2080,123 @@
     },
     "effective_config": {
       "allOf": [
-        { "$ref": "config.schema.json" },
         {
-          "required": ["version", "weights", "metrics", "critical_sections", "min_section_words", "min_tqi", "fail_on_severity", "applicability", "history", "prompts", "limits"],
+          "$ref": "config.schema.json"
+        },
+        {
+          "required": [
+            "version",
+            "weights",
+            "metrics",
+            "critical_sections",
+            "min_section_words",
+            "min_tqi",
+            "fail_on_severity",
+            "applicability",
+            "history",
+            "prompts",
+            "limits"
+          ],
           "properties": {
-            "weights": { "required": ["structure", "decisions", "volatility", "drift"] },
+            "weights": {
+              "required": [
+                "structure",
+                "decisions",
+                "volatility",
+                "drift"
+              ]
+            },
             "metrics": {
-              "required": ["structure", "decisions", "volatility", "drift"],
+              "required": [
+                "structure",
+                "decisions",
+                "volatility",
+                "drift"
+              ],
               "properties": {
-                "structure": { "required": ["coverage", "depth", "placeholders", "references", "headings", "diagrams"] },
-                "decisions": { "required": ["completeness", "lifecycle", "tradeoffs", "quality_attributes", "bidirectional_traceability"] },
-                "volatility": { "required": ["classification", "encapsulation", "impact_mitigation", "evolution"] },
-                "drift": { "required": ["coverage", "completeness", "provenance", "atomic_verifiability", "integrity"] }
+                "structure": {
+                  "required": [
+                    "coverage",
+                    "depth",
+                    "placeholders",
+                    "references",
+                    "headings",
+                    "diagrams"
+                  ]
+                },
+                "decisions": {
+                  "required": [
+                    "completeness",
+                    "lifecycle",
+                    "tradeoffs",
+                    "quality_attributes",
+                    "bidirectional_traceability"
+                  ]
+                },
+                "volatility": {
+                  "required": [
+                    "classification",
+                    "encapsulation",
+                    "impact_mitigation",
+                    "evolution"
+                  ]
+                },
+                "drift": {
+                  "required": [
+                    "coverage",
+                    "completeness",
+                    "provenance",
+                    "atomic_verifiability",
+                    "integrity"
+                  ]
+                }
               }
             },
             "applicability": {
-              "required": ["components", "dependencies", "flows", "cloud_resources", "volatility_zones", "constraints_and_adrs"],
-              "additionalProperties": { "required": ["required", "reason"] }
+              "required": [
+                "components",
+                "dependencies",
+                "flows",
+                "cloud_resources",
+                "volatility_zones",
+                "constraints_and_adrs"
+              ],
+              "additionalProperties": {
+                "required": [
+                  "required",
+                  "reason"
+                ]
+              }
             },
-            "history": { "required": ["enabled", "max_commits", "hotspot_changes", "coupling_min_support", "coupling_threshold", "stale_after_days", "timeout_seconds"] },
-            "prompts": { "required": ["max_claims_per_prompt", "max_embedded_chars", "max_findings_per_prompt"] },
-            "limits": { "required": ["max_files", "max_file_bytes", "max_total_bytes", "max_expanded_bytes", "max_include_depth", "max_claims", "max_git_output_bytes"] }
+            "history": {
+              "required": [
+                "enabled",
+                "max_commits",
+                "hotspot_changes",
+                "coupling_min_support",
+                "coupling_threshold",
+                "stale_after_days",
+                "timeout_seconds"
+              ]
+            },
+            "prompts": {
+              "required": [
+                "max_claims_per_prompt",
+                "max_embedded_chars",
+                "max_findings_per_prompt"
+              ]
+            },
+            "limits": {
+              "required": [
+                "max_files",
+                "max_file_bytes",
+                "max_total_bytes",
+                "max_expanded_bytes",
+                "max_include_depth",
+                "max_claims",
+                "max_git_output_bytes"
+              ]
+            }
           }
         }
       ]
@@ -3068,6 +3170,44 @@
       },
       "minItems": 3,
       "maxItems": 3
+    },
+    "architecture_review": {
+      "type": "object",
+      "required": [
+        "profile",
+        "rigor",
+        "architecture_type",
+        "c4_level",
+        "deployment_view",
+        "status",
+        "checks"
+      ],
+      "properties": {
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title",
+              "section",
+              "status",
+              "expectation",
+              "sources",
+              "rejected_sources",
+              "reason"
+            ],
+            "properties": {
+              "status": {
+                "enum": [
+                  "evidence_available",
+                  "unknown"
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   }
 }

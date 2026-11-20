@@ -82,6 +82,11 @@ def assess(tree: DocumentTree, adrs: list[dict[str, Any]], claims: dict[str, Any
                                         "Complete typed ADR evidence and reciprocal links to populated sections."))
     decisions = {name: Metric(count, max(len(adrs), 1), f"ADRs satisfying {name} / ADRs; absence scores zero",
                               ("/adrs", "/traceability_edges")) for name, count in counts.items()}
+    if config["review"]["profile"] == "arc42":
+        excluded = {dimension: {name: Metric(0, 0, "Excluded from the arc42 documentation profile",
+                                             reason="Outside configured assessment scope")
+                                for name in config["metrics"][dimension]} for dimension in ("volatility", "drift")}
+        return {"structure": structure, "decisions": decisions, **excluded}, findings
     volatility, volatility_findings = assess_volatility(tree, claims, adrs, history,
                                                         config["applicability"]["volatility_zones"]["required"])
     findings.extend(volatility_findings)

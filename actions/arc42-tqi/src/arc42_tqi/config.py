@@ -102,6 +102,30 @@ def validate(config: dict[str, Any]) -> None:
     _number(config["min_tqi"], "min_tqi", 100)
     if config["fail_on_severity"] not in (*SEVERITIES, "none"):
         raise InputError("Invalid fail_on_severity")
+    review = config["review"]
+    choices = {
+        "profile": ("arc42", "extended"), "rigor": ("advisory", "standard", "strict"),
+        "architecture_type": ("strategic", "tactical", "transition"),
+        "c4_level": ("context", "container", "component"), "deployment_view": ("required", "not-required"),
+    }
+    for key, allowed in choices.items():
+        if review[key] not in allowed:
+            raise InputError(f"review.{key} must be one of {', '.join(allowed)}")
+    if review["profile"] == "arc42":
+        if config["weights"]["volatility"] or config["weights"]["drift"] or config["history"]["enabled"]:
+            raise InputError("The arc42 profile excludes volatility, drift scoring, and Git history; use extended for those checks")
+    for name, sources in review["evidence"].items():
+        if not isinstance(sources, list) or len(sources) > 100:
+            raise InputError(f"review.evidence.{name} must be a list of at most 100 sources")
+        for source in sources:
+            if not isinstance(source, dict) or set(source) != {"file", "line", "end_line"}:
+                raise InputError("Review evidence requires file, line, and end_line")
+            if not isinstance(source["file"], str) or not source["file"].strip():
+                raise InputError("Review evidence file must be nonempty text")
+            if any(type(source[key]) is not int for key in ("line", "end_line")) or not 1 <= source["line"] <= source["end_line"]:
+                raise InputError("Review evidence requires a positive, ordered line range")
+            if source["end_line"] - source["line"] >= 200:
+                raise InputError("Review evidence ranges may contain at most 200 lines")
     sections = config["critical_sections"]
     if not isinstance(sections, list) or not sections or any(type(item) is not int or not 1 <= item <= 12 for item in sections):
         raise InputError("critical_sections must contain section numbers 1–12")
@@ -135,8 +159,9 @@ def validate(config: dict[str, Any]) -> None:
             raise InputError(f"{name} must be an integer in {minimum}..{maximum}")
 
 
-def load_config(root: Path, path: str | None) -> dict[str, Any]:
+def load_config(root: Path, path: str | None, review_overrides: dict[str, str] | None = None) -> dict[str, Any]:
     config: dict[str, Any] = load_yaml(files("arc42_tqi").joinpath("default-config.yml").read_text())
+    override: dict[str, Any] = {}
     candidate = safe_path(root, path or ".arc42-tqi.yml")
     if candidate.is_file():
         if candidate.stat().st_size > 2_097_152:
@@ -144,8 +169,22 @@ def load_config(root: Path, path: str | None) -> dict[str, Any]:
         override = load_yaml(candidate.read_text(encoding="utf-8"))
         if not isinstance(override, dict):
             raise InputError("Configuration must be a mapping")
-        _merge(config, override)
     elif path:
         raise InputError("Explicit configuration file does not exist")
+    if "review" in override and not isinstance(override["review"], dict):
+        raise InputError("review must be a mapping")
+    requested = {**override.get("review", {}), **(review_overrides or {})}
+    if requested.get("profile", config["review"]["profile"]) == "arc42":
+        config["weights"].update(structure=50, decisions=50, volatility=0, drift=0)
+        config["history"]["enabled"] = False
+        config["applicability"]["volatility_zones"] = {
+            "required": False, "reason": "Outside the arc42 documentation assessment scope",
+        }
+    else:
+        config["weights"].update(structure=25, decisions=25, volatility=25, drift=25)
+        config["history"]["enabled"] = True
+        config["applicability"]["volatility_zones"] = {"required": True, "reason": None}
+    _merge(config, override)
+    _merge(config["review"], review_overrides or {}, "review.")
     validate(config)
     return config

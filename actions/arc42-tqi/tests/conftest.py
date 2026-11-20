@@ -10,6 +10,8 @@ import pytest
 def mature(tmp_path: Path) -> Path:
     source = Path(__file__).parent / "fixtures" / "mature"
     shutil.copytree(source, tmp_path, dirs_exist_ok=True, ignore=shutil.ignore_patterns(".arc42-tqi"))
+    # Existing mature contract tests exercise the published four-dimension rubric.
+    (tmp_path / ".arc42-tqi.yml").write_text("review: {profile: extended}\n")
     return tmp_path
 
 

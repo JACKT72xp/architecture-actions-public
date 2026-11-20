@@ -1,9 +1,9 @@
 version: 1
 weights:
-  structure: 25
-  decisions: 25
-  volatility: 25
-  drift: 25
+  structure: 50
+  decisions: 50
+  volatility: 0
+  drift: 0
 metrics:
   structure:
     coverage: 25
@@ -47,13 +47,13 @@ applicability:
     required: true
     reason: null
   volatility_zones:
-    required: true
-    reason: null
+    required: false
+    reason: Outside the arc42 documentation assessment scope
   constraints_and_adrs:
     required: true
     reason: null
 history:
-  enabled: true
+  enabled: false
   max_commits: 200
   hotspot_changes: 5
   coupling_min_support: 3
@@ -72,3 +72,20 @@ limits:
   max_include_depth: 16
   max_claims: 10000
   max_git_output_bytes: 8388608
+review:
+  profile: arc42
+  rigor: standard
+  architecture_type: tactical
+  c4_level: component
+  deployment_view: required
+  evidence:
+    context: []
+    container: []
+    component: []
+    deployment: []
+    strategic_intent: []
+    tactical_scope: []
+    current_state: []
+    target_state: []
+    migration_plan: []
+    rollback: []

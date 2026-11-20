@@ -9,6 +9,21 @@ on:
         type: choice
         options: [poor, mature]
         default: poor
+      rigor:
+        description: Missing review evidence severity (gate remains non-blocking in this preview)
+        type: choice
+        options: [advisory, standard, strict]
+        default: standard
+      architecture-type:
+        description: Architecture review purpose
+        type: choice
+        options: [tactical, strategic, transition]
+        default: tactical
+      c4-level:
+        description: Required C4 depth
+        type: choice
+        options: [context, container, component]
+        default: component
 permissions:
   contents: read
 jobs:
@@ -23,6 +38,11 @@ jobs:
         with:
           docs-path: actions/arc42-tqi/tests/fixtures/${{ inputs.fixture || 'poor' }}/docs
           adr-path: actions/arc42-tqi/tests/fixtures/${{ inputs.fixture || 'poor' }}/docs/adr
+          review-profile: arc42
+          review-rigor: ${{ inputs.rigor || 'standard' }}
+          architecture-type: ${{ inputs.architecture-type || 'tactical' }}
+          c4-level: ${{ inputs.c4-level || 'component' }}
+          deployment-view: required
           output-dir: .arc42-tqi-preview
           min-tqi: '0'
           fail-on-severity: none

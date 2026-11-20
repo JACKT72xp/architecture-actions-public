@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "arc42-tqi repository configuration overrides, Phase 1",
-  "description": "Deep-merge with defaults before cross-field validation. Every weight group must have a positive sum; at least one claim category must remain required; source and output paths must not overlap destructively.",
+  "description": "Deep-merge profile defaults with repository overrides, then Action inputs. Cross-field validation enforces scope, positive weights, ordered evidence ranges of at most 200 lines, and safe source/output paths.",
   "type": "object",
   "additionalProperties": false,
   "required": [],
@@ -554,6 +554,321 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 1073741824
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "enum": [
+            "arc42",
+            "extended"
+          ]
+        },
+        "rigor": {
+          "enum": [
+            "advisory",
+            "standard",
+            "strict"
+          ]
+        },
+        "architecture_type": {
+          "enum": [
+            "strategic",
+            "tactical",
+            "transition"
+          ]
+        },
+        "c4_level": {
+          "enum": [
+            "context",
+            "container",
+            "component"
+          ]
+        },
+        "deployment_view": {
+          "enum": [
+            "required",
+            "not-required"
+          ]
+        },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "context": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "container": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "component": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "deployment": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "strategic_intent": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "tactical_scope": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "current_state": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "target_state": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "migration_plan": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            },
+            "rollback": {
+              "type": "array",
+              "maxItems": 100,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
         }
       }
     }

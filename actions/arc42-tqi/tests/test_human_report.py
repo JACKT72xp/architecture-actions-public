@@ -21,7 +21,7 @@ class Markup(HTMLParser):
 
 
 def sample(mature: Path) -> tuple[dict[str, Any], dict[str, Any]]:
-    return analyze_repository(mature)
+    return analyze_repository(mature, review_overrides={"profile": "extended"})
 
 
 def test_explains_weighted_score_gate_and_all_findings_without_mutation(mature: Path) -> None:
@@ -59,8 +59,8 @@ def test_custom_weights_and_not_applicable_metrics(mature: Path) -> None:
     report, claims = sample(mature)
     markdown = human_report(report, claims)
     assert "| Documentation structure | 100.00 | 100.00% | 100.00 | 0.00 |" in markdown
-    assert "| Architecture decisions | 100.00 | 0.00% | 0.00 | 0.00 |" in markdown
-    assert "N/A" in markdown
+    assert "| Architecture decisions |" not in markdown
+    assert "Readiness for change" not in markdown
     assert "excluded from the dimension" in markdown
     assert "No deterministic findings were recorded" in markdown
     assert "a perfect documentation score does not replace" in markdown
@@ -88,7 +88,7 @@ def test_source_evidence_stays_inert_in_html(mature: Path) -> None:
 
 
 def test_missing_inputs_and_failed_gate_remain_explainable(tmp_path: Path) -> None:
-    report, claims = analyze_repository(tmp_path, min_tqi=70, fail_on_severity="high")
+    report, claims = analyze_repository(tmp_path, min_tqi=70, fail_on_severity="high", review_overrides={"profile": "extended"})
     markdown = human_report(report, claims)
     assert "TQI 0.00/100" in markdown
     assert "Why the quality gate failed" in markdown
