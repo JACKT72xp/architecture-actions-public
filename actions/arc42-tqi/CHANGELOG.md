@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.2.0
+
+Compatibility: the default scoring profile changes to arc42 (scoring 2.0).
+Scores are not directly comparable with 0.1.0. Set `review-profile: extended`
+to retain the legacy four-dimension rubric. Generated report schema is 1.1;
+claims remain schema 1.0. Review existing configuration overrides before upgrading.
 
 - Default arc42 scoring profile excludes volatility, Git history, and audit-readiness penalties; retain `extended` for legacy scoring.
 - Configurable rigor, architecture purpose, C4 depth, and deployment evidence review with source excerpts and unknown states.

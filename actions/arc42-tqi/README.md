@@ -20,8 +20,7 @@ The default `arc42` profile scores structure and decision evidence. Volatility,
 Git history, and audit readiness are excluded from its score and gate. Configure
 `review-rigor`, `architecture-type`, `c4-level`, and `deployment-view` in the Action.
 See [review profiles and RAG boundaries](docs/review-profiles.md) for evidence
-mapping, examples, and migration from the `extended` legacy rubric. This is an
-unreleased scoring change; published v0.1.0 behavior is unchanged.
+mapping, examples, and migration from the `extended` legacy rubric. These inputs are available starting with v0.2.0; v0.1.0 behavior is unchanged.
 
 ## Quick start
 

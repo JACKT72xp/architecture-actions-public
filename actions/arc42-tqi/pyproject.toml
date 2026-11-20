@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "arc42-tqi-action"
-version = "0.1.0"
+version = "0.2.0"
 description = "Deterministic arc42 quality metrics and evidence-ready architecture drift contracts"
 readme = "README.md"
 requires-python = ">=3.12"
