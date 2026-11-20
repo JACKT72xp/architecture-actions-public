@@ -92,7 +92,7 @@ def test_invalid_review_configuration(tmp_path: Path, override: str) -> None:
         load_config(tmp_path, None)
 
 
-def test_cli_inputs_override_file_and_summary_keeps_all_findings(mature: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+def test_cli_inputs_override_file_and_summary_groups_findings(mature: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ARC42_TQI_REVIEW_PROFILE", "arc42")
     monkeypatch.setenv("ARC42_TQI_REVIEW_RIGOR", "strict")
     monkeypatch.setenv("ARC42_TQI_ARCHITECTURE_TYPE", "transition")
@@ -109,8 +109,9 @@ def test_cli_inputs_override_file_and_summary_keeps_all_findings(mature: Path, m
     report, claims = analyze_repository(mature, review_overrides={"profile": "arc42", "architecture_type": "transition"})
     rendered = summary(report, "out")
     detailed = human_report(report, claims)
+    assert f"{len(report["findings"])} findings" in rendered
+    assert "Link the architecture evidence" in rendered
     for item in report["findings"]:
-        assert item["rule_id"].replace("_", "\\_") in rendered
         assert item["id"] in detailed
     assert "Rollback and transition risks" in detailed
     assert "Code-level diagrams are not required" in detailed

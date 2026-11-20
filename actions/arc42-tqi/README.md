@@ -84,7 +84,12 @@ configuration, unsafe input/output path, or write failure exits with status 2.
 
 ## Start with the human report
 
-Download the workflow artifact and open **human-report.html** in a browser. It is
+Download the workflow artifact and start with **human-summary.html** (or **human-summary.md**).
+This short view shows the score, gate result, three grouped priorities, and a plain-language
+deployment status. Its size stays bounded as the repository grows. GitHub summaries
+and optional PR comments use the same concise content.
+
+Open **human-report.html** for the detailed assessment. It is
 self-contained, works offline, requires no LLM, and can be printed. The equivalent
 **human-report.md** is suitable for GitHub and Markdown viewers. Both are generated
 even when a quality gate fails, alongside the existing machine-readable evidence.
@@ -94,7 +99,9 @@ failed, priority documentation risks and next steps, all 12 sections, structured
 evidence coverage, every metric, and every finding with its source, review implication, concrete task, and completion criteria.
 It distinguishes parser recognition gaps from verified architecture defects and
 labels optional semantic observations separately. It does not rescore the analysis
-or certify implementation conformance. `summary.md` remains a compact CI overview.
+or certify implementation conformance. The detailed report also starts with the short
+summary. Review evidence shows at most three example locations, with rejected links
+first; the JSON retains every reference, excerpt, and hash.
 
 To add human reports to an older downloaded bundle, install this checkout with
 `python -m pip install -e .`, then run:
@@ -104,7 +111,7 @@ PYTHONPATH=src python scripts/render_human_report.py --artifacts /path/to/downlo
 ```
 
 This reads matching `tqi-report.json` and `claims.json` snapshots and adds only the
-two human-report files. It does not modify the saved JSON, claims, or audit prompts.
+human summary and detailed report files. It does not modify the saved JSON, claims, or audit prompts.
 
 ## Inputs and outputs
 
@@ -129,7 +136,7 @@ two human-report files. It does not modify the saved JSON, claims, or audit prom
 | `comment-pr` | `false` | Upsert same-repository PR bot comment |
 | `github-token` | `${{ github.token }}` | Used only when comments are enabled |
 
-Outputs: `tqi-score`, `maturity-level`, `report-path`, `human-report-path`,
+Outputs: `tqi-score`, `maturity-level`, `report-path`, `human-summary-path`, `human-summary-html-path`, `human-report-path`,
 `human-report-html-path`, `claims-path`,
 `drift-prompts-dir`, and `findings-count`. Artifact paths are checkout-relative.
 `fail-on-severity: high` blocks critical **and** high findings. Defaults collect
@@ -205,6 +212,8 @@ tqi-report.json
 claims.yaml
 claims.json
 summary.md
+human-summary.md
+human-summary.html
 human-report.md
 human-report.html
 drift-prompts/

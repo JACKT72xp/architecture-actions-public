@@ -12,7 +12,7 @@ import yaml
 
 from .claims import CATEGORIES
 from .config import InputError, safe_path
-from .human_report import human_html, human_report
+from .human_report import human_html, human_report, human_summary
 
 AUDITS = {
     "code": "Inspect module/package boundaries, imports, build dependency graphs, public interfaces, coupling, and synchronous/asynchronous call sites. Resolve repository identities and commit SHAs before comparing. Check both forbidden and permitted dependencies; absent evidence is not proof of absence.",
@@ -33,28 +33,10 @@ def escaped(value: Any) -> str:
 
 
 def summary(report: dict[str, Any], output: str) -> str:
-    lines = ["<!-- arc42-tqi-action -->", "## Architecture Technical Quality Index", "",
-             f"**TQI: {report['tqi_score']:.2f}/100 · {report['maturity_level']}**", "",
-             "| Dimension | Score | Weight |", "| --- | ---: | ---: |"]
-    for name, dimension in report["dimensions"].items():
-        if not dimension["weight"]:
-            continue
-        lines.append(f"| {name} | {dimension['score']:.2f} | {dimension['weight']} |")
-    lines.extend(["", f"Artifacts: {escaped(output)}", "",
-                  f"Gate: **{'passed' if report['quality_gate']['passed'] else 'failed'}**; minimum TQI {report['quality_gate']['min_tqi']}; severity threshold {report['quality_gate']['fail_on_severity']}.", "",
-                  "### Findings and next steps", ""])
-    used_bytes = len("\n".join(lines).encode())
-    for index, item in enumerate(report["findings"]):
-        entry = f"- **{item['severity']} · {escaped(item['rule_id'])}** — {escaped(item['message'])} ({escaped(item['file'] or 'repository')}). Evidence: {escaped(item['evidence'])}. {escaped(item['remediation'])}"
-        used_bytes += len(entry.encode()) + 1
-        if used_bytes > 900_000:
-            lines.append(f"{len(report['findings']) - index} additional findings exceed the workflow summary size budget; all are included in the downloadable human report.")
-            break
-        lines.append(entry)
-    if not report["findings"]:
-        lines.append("No deterministic findings.")
-    lines.extend(["", "Download the workflow artifact and open **human-report.html** in a browser or **human-report.md** for the full explanation, risks, and remediation plan.", "", "L4 measures documentation readiness; it does not certify implementation conformance.", ""])
-    return "\n".join(lines)
+    return ("<!-- arc42-tqi-action -->\n## Architecture Technical Quality Index\n\n"
+            + human_summary(report).split("\n", 1)[1]
+            + f"\nArtifacts: {escaped(output)}. Download and open **human-summary.html** for the short version "
+              "or **human-report.html** for the full detail.\n")
 
 
 def prompt(kind: str, report: dict[str, Any], claims: dict[str, Any],
@@ -177,7 +159,8 @@ def write_artifacts(root: Path, output: Path, report: dict[str, Any], claims: di
     output.mkdir(parents=True, exist_ok=True)
     prompts = build_prompts(report, claims, output.relative_to(root).as_posix())
     narrative = human_report(report, claims)
-    artifacts = {"human-report.md": narrative, "human-report.html": human_html(narrative),
+    brief = human_summary(report)
+    artifacts = {"human-summary.md": brief, "human-summary.html": human_html(brief), "human-report.md": narrative, "human-report.html": human_html(narrative),
                  "tqi-report.json": json_text(report), "claims.json": json_text(claims),
                  "claims.yaml": yaml.safe_dump(claims, sort_keys=True, allow_unicode=True),
                  "summary.md": summary(report, output.relative_to(root).as_posix())}
@@ -200,6 +183,8 @@ def write_artifacts(root: Path, output: Path, report: dict[str, Any], claims: di
                 temporary.unlink()
     return {"tqi-score": str(report["tqi_score"]), "maturity-level": report["maturity_level"],
             "report-path": (output / "tqi-report.json").relative_to(root).as_posix(),
+            "human-summary-path": (output / "human-summary.md").relative_to(root).as_posix(),
+            "human-summary-html-path": (output / "human-summary.html").relative_to(root).as_posix(),
             "human-report-path": (output / "human-report.md").relative_to(root).as_posix(),
             "human-report-html-path": (output / "human-report.html").relative_to(root).as_posix(),
             "claims-path": (output / "claims.yaml").relative_to(root).as_posix(),

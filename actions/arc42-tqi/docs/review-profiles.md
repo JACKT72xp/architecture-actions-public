@@ -93,9 +93,14 @@ establish availability only: they do not prove that a referenced paragraph is a
 C4 view, validate diagram topology, or approve its architecture. The overall
 review remains `review_required` even when all references are available.
 
-Every human finding includes location, observed evidence, review implication,
-remediation, a concrete task, and completion criteria. GitHub's summary includes
-findings up to a 900 KB safety budget, explicitly reporting any overflow; the downloadable HTML/Markdown contains the full assessment.
+Start with `human-summary.html` or `human-summary.md`: score, gate outcome, three
+grouped priorities, and a plain-language deployment status. GitHub summaries and PR
+comments use this bounded view. Groups are ordered by blockers, severity, and count;
+remaining groups are explicitly counted.
+
+The detailed human report includes every finding, its implication, remediation, task,
+and completion criteria. Review evidence shows at most three example locations with
+rejected references first. All excerpts, hashes, and references remain in the JSON.
 
 ## Relationship to RAG architecture intelligence
 

@@ -1,7 +1,7 @@
 name: Preview human-readable TQI report
 on:
   push:
-    branches: [feat/human-readable-tqi-report]
+    branches: [feat/human-readable-tqi-report, feat/concise-human-summary]
   workflow_dispatch:
     inputs:
       fixture:
