@@ -1,6 +1,6 @@
 # Architecture review profiles
 
-This unreleased change makes `arc42` the default. It scores documentation structure
+Version 0.2.0 makes `arc42` the default. It scores documentation structure
 and typed decision evidence, with default weights 50/50. Volatility, Git mining,
 and audit-readiness checks do not affect its score or gate. Claims and separate
 audit prompts remain auxiliary exports. Existing four-dimension assessments can
@@ -26,8 +26,7 @@ an old bundle's score.
     fail-on-severity: high
 ```
 
-Use a reviewed full source commit SHA containing this change. The current published
-v0.1.0 distribution does not provide these inputs. After upstream merge, export
+Use a reviewed full source commit SHA containing this change. The v0.1.0 distribution does not provide these inputs; use v0.2.0 or later. After upstream merge, export
 and release the distribution through its normal PR/release process.
 
 Action inputs override repository `review` settings; empty inputs preserve them.
