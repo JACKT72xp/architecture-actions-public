@@ -1,74 +1,8 @@
 version: 1
-weights:
-  structure: 25
-  decisions: 25
-  volatility: 25
-  drift: 25
-metrics:
-  structure:
-    coverage: 25
-    depth: 20
-    placeholders: 20
-    references: 15
-    headings: 10
-    diagrams: 10
-  decisions:
-    completeness: 25
-    lifecycle: 20
-    tradeoffs: 20
-    quality_attributes: 10
-    bidirectional_traceability: 25
-  volatility:
-    classification: 25
-    encapsulation: 30
-    impact_mitigation: 30
-    evolution: 15
-  drift:
-    coverage: 20
-    completeness: 25
-    provenance: 20
-    atomic_verifiability: 20
-    integrity: 15
-critical_sections: [5,6,7,9,10,11]
-min_section_words: 40
-min_tqi: 0
-fail_on_severity: none
-applicability:
-  components:
-    required: true
-    reason: null
-  dependencies:
-    required: true
-    reason: null
-  flows:
-    required: true
-    reason: null
-  cloud_resources:
-    required: true
-    reason: null
-  volatility_zones:
-    required: true
-    reason: null
-  constraints_and_adrs:
-    required: true
-    reason: null
-history:
-  enabled: true
-  max_commits: 200
-  hotspot_changes: 5
-  coupling_min_support: 3
-  coupling_threshold: 0.5
-  stale_after_days: 30
-  timeout_seconds: 5
-prompts:
-  max_claims_per_prompt: 80
-  max_embedded_chars: 24000
-  max_findings_per_prompt: 20
-limits:
-  max_files: 2000
-  max_file_bytes: 2097152
-  max_total_bytes: 33554432
-  max_expanded_bytes: 67108864
-  max_include_depth: 16
-  max_claims: 10000
-  max_git_output_bytes: 8388608
+# Inherit the packaged defaults; override only the review policy needed here.
+review:
+  profile: arc42
+  rigor: standard
+  architecture_type: tactical
+  c4_level: component
+  deployment_view: required

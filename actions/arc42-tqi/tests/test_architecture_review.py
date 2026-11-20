@@ -114,3 +114,13 @@ def test_cli_inputs_override_file_and_summary_keeps_all_findings(mature: Path, m
         assert item["id"] in detailed
     assert "Rollback and transition risks" in detailed
     assert "Code-level diagrams are not required" in detailed
+
+
+def test_shipped_repository_configuration_supports_both_profiles() -> None:
+    root = Path(__file__).resolve().parents[1]
+    config = load_config(root, ".arc42-tqi.yml")
+    assert config["weights"] == {"structure": 50, "decisions": 50, "volatility": 0, "drift": 0}
+    assert config["history"]["enabled"] is False
+    legacy = load_config(root, ".arc42-tqi.yml", {"profile": "extended"})
+    assert all(weight == 25 for weight in legacy["weights"].values())
+    assert legacy["history"]["enabled"] is True
