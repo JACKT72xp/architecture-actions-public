@@ -17,8 +17,8 @@ def main() -> None:
     args = parser.parse_args()
     report = json.loads((args.artifacts / "tqi-report.json").read_text(encoding="utf-8"))
     claims = json.loads((args.artifacts / "claims.json").read_text(encoding="utf-8"))
-    if report.get("schema_version") not in {"1.0", "1.1"} or claims.get("schema_version") != "1.0":
-        parser.error("This renderer requires report schema 1.0/1.1 and claims schema 1.0")
+    if report.get("schema_version") not in {"1.0", "1.1", "1.2"} or claims.get("schema_version") != "1.0":
+        parser.error("This renderer requires report schema 1.0/1.1/1.2 and claims schema 1.0")
     if report.get("metadata") != claims.get("metadata"):
         parser.error("The report and claims must belong to the same analyzed snapshot")
     markdown = human_report(report, claims)

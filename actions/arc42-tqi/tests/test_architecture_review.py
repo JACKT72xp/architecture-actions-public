@@ -33,17 +33,15 @@ def test_arc42_scope_excludes_volatility_and_claim_gates(mature: Path) -> None:
     assert "evidence needs review" in markdown
 
 
-@pytest.mark.parametrize("purpose,expected", [
-    ("strategic", {"strategic_intent", "target_state"}),
-    ("tactical", {"tactical_scope"}),
-    ("transition", {"current_state", "target_state", "migration_plan", "rollback"}),
-])
-def test_depth_and_architecture_purpose(mature: Path, purpose: str, expected: set[str]) -> None:
+def test_depth_and_strategic_baseline(mature: Path) -> None:
     report, _ = analyze_repository(mature, review_overrides={
-        "profile": "arc42", "architecture_type": purpose, "c4_level": "container", "deployment_view": "not-required",
+        "profile": "arc42", "c4_level": "container", "deployment_view": "not-required",
     })
-    assert {check["id"] for check in report["architecture_review"]["checks"]} == {"context", "container"} | expected
-    assert all(check["status"] == "unknown" for check in report["architecture_review"]["checks"])
+    review = report["architecture_review"]
+    assert review["baseline"] == "strategic"
+    assert "architecture_type" not in review
+    assert {check["id"] for check in review["checks"]} == {"context", "container", "strategic_intent"}
+    assert all(check["status"] == "unknown" for check in review["checks"])
 
 
 def test_rigor_changes_gate_not_score(mature: Path) -> None:
@@ -59,7 +57,7 @@ def test_evidence_is_scoped_validated_and_not_semantic_certification(mature: Pat
     path.write_text("The delivery scope includes order placement and excludes financial reconciliation.\n")
     valid = {"file": "docs/review.md", "line": 1, "end_line": 1}
     config = {"review": {"profile": "arc42", "c4_level": "context", "deployment_view": "not-required",
-                         "evidence": {"context": [valid], "tactical_scope": [dict(valid)]}}}
+                         "evidence": {"context": [valid], "strategic_intent": [dict(valid)]}}}
     (mature / ".arc42-tqi.yml").write_text(yaml.safe_dump(config))
     report, _ = analyze_repository(mature)
     checks = report["architecture_review"]["checks"]
@@ -81,7 +79,7 @@ def test_evidence_is_scoped_validated_and_not_semantic_certification(mature: Pat
 
 @pytest.mark.parametrize("override", [
     "review: {profile: invalid}", "review: {rigor: maximum}", "review: {c4_level: code}",
-    "review: {architecture_type: auto}", "review: {deployment_view: true}", "review: []",
+    "review: {architecture_type: auto}", "review: {architecture_type: tactical}", "review: {deployment_view: true}", "review: []",
     "review: {evidence: {context: [{file: x, line: 3, end_line: 1}]}}",
     "review: {evidence: {context: [{file: x, line: 1, end_line: 201}]}}",
     "weights: {volatility: 10}", "history: {enabled: true}",
@@ -95,7 +93,6 @@ def test_invalid_review_configuration(tmp_path: Path, override: str) -> None:
 def test_cli_inputs_override_file_and_summary_groups_findings(mature: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("ARC42_TQI_REVIEW_PROFILE", "arc42")
     monkeypatch.setenv("ARC42_TQI_REVIEW_RIGOR", "strict")
-    monkeypatch.setenv("ARC42_TQI_ARCHITECTURE_TYPE", "transition")
     monkeypatch.setenv("ARC42_TQI_C4_LEVEL", "component")
     monkeypatch.setenv("ARC42_TQI_DEPLOYMENT_VIEW", "required")
     assert main(["--repo-root", str(mature), "--fail-on-severity", "high"]) == 1
@@ -105,15 +102,15 @@ def test_cli_inputs_override_file_and_summary_groups_findings(mature: Path, monk
     registry = Registry().with_resources((path.name, Resource.from_contents(json.loads(path.read_text())))
                                          for path in schemas.glob("*.schema.json"))
     jsonschema.Draft202012Validator(json.loads((schemas / "tqi-report.schema.json").read_text()), registry=registry).validate(generated)
-    assert generated["schema_version"] == "1.1"
-    report, claims = analyze_repository(mature, review_overrides={"profile": "arc42", "architecture_type": "transition"})
+    assert generated["schema_version"] == "1.2"
+    report, claims = analyze_repository(mature, review_overrides={"profile": "arc42"})
     rendered = summary(report, "out")
     detailed = human_report(report, claims)
     assert f"{len(report["findings"])} findings" in rendered
     assert "Link the architecture evidence" in rendered
     for item in report["findings"]:
         assert item["id"] in detailed
-    assert "Rollback and transition risks" in detailed
+    assert "Strategic direction" in detailed
     assert "Code-level diagrams are not required" in detailed
 
 

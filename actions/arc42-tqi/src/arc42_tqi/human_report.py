@@ -116,7 +116,7 @@ def executive_brief(report: dict[str, Any], links: bool = True) -> str:
     groups: dict[str, list[dict[str, Any]]] = {}
     for item in findings:
         rule = item["rule_id"]
-        group = ("review" if rule.startswith("REVIEW_") else "decisions" if rule.startswith("ADR_")
+        group = ("decisions" if rule == "REVIEW_DECISION_EXCEPTION" else "review" if rule.startswith("REVIEW_") else "decisions" if rule.startswith("ADR_")
                  else "placeholders" if rule == "ARC42_PLACEHOLDER" else "sections" if rule.startswith("ARC42_")
                  else "references" if rule in {"DOC_REFERENCE", "DOC_INCLUDE"} else "other")
         groups.setdefault(group, []).append(item)
@@ -162,6 +162,19 @@ def executive_brief(report: dict[str, Any], links: bool = True) -> str:
         lines.extend(["## Architecture review", "",
                       f"{unknown} of {len(checks)} configured expectations need evidence links or corrections. "
                       "Readable references still require a human content review.", ""])
+    if "decision_assessments" in review and review.get("profile") == "arc42":
+        decisions = review["decision_assessments"]
+        active_decisions = [item for item in decisions if item["status"] != "historical"]
+        tactical = sum("tactical" in item["declared_exceptions"] for item in active_decisions)
+        transition = sum("transition" in item["declared_exceptions"] for item in active_decisions)
+        unknown = sum(not item["declared_exceptions"] for item in active_decisions)
+        gaps = sum(bool(item["missing_evidence"]) for item in active_decisions)
+        lines.extend(["**Strategy and decisions:** strategic direction is the review baseline. "
+                      f"{tactical} active ADRs declare tactical exceptions; {transition} declare transition plans "
+                      f"(an ADR can include both). {gaps} need supporting evidence. "
+                      f"For {unknown}, exception intent was not established. "
+                      "These counts describe explicit declarations, not inferred design quality. "
+                      "See the full report for ADR references.", ""])
     deployment = next((check for check in checks if check["id"] == "deployment"), None)
     if deployment:
         status, explanation = review_explanation(deployment)
@@ -217,7 +230,7 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
     review = report.get("architecture_review")
     if review and review["profile"] == "arc42":
         lines.extend(["## Agreed review scope", "",
-                      f"Profile: **arc42** · Rigor: **{text(review['rigor'])}** · Architecture purpose: **{text(review['architecture_type'])}**.", "",
+                      f"Profile: **arc42** · Rigor: **{text(review['rigor'])}** · {('Strategic baseline (review policy, not a verified classification)' if 'baseline' in review else 'Legacy declared purpose: ' + text(review.get('architecture_type', 'Not recorded')))}.", "",
                       f"C4 depth through **{text(review['c4_level'])}**; deployment view: **{text(review['deployment_view'])}**. Code-level diagrams are not required.", "",
                       "Volatility, Git history, and audit-readiness metrics do not contribute to this profile's TQI or gate. "
                       "The score covers document structure and typed decision evidence; view and architecture-purpose checks are reported separately and can block through the severity gate.", "",
@@ -236,6 +249,31 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                 lines.append(f"- {len(examples) - 3} more references are in tqi-report.json → architecture_review.checks.")
             if examples:
                 lines.extend(["", "Full source ranges, excerpts, and hashes remain in the machine evidence; up to three example locations are shown here.", ""])
+    if review and review.get("decision_assessments"):
+        lines.extend(["## Decisions against the strategy", "",
+                      "Section 4 explains the strategy; section 9 records decisions; section 11 tracks their risks and debt. "
+                      "Tactical exceptions are not automatically defects, and transition plans can coexist with them. "
+                      "Only explicit ADR headings are recognized; other wording remains unclassified for human review.", ""])
+        for decision in review["decision_assessments"]:
+            source = decision["source"]
+            roles = ", ".join(decision["declared_exceptions"]) or "Exception intent not established"
+            state = ("Historical decision" if decision["status"] == "historical" else
+                     "Supporting evidence needs review" if decision["missing_evidence"] else
+                     "Ready for human review" if decision["declared_exceptions"] else "Needs human interpretation")
+            lines.extend([f"### {text(decision['adr_id'])} — {text(decision['title'])}", "",
+                          f"{text(roles)} · {state} · Lifecycle: {text(decision['lifecycle'])}.", "",
+                          f"Source: {text(source['file'])}:{source['line']}–{source['end_line']}.", ""])
+            if decision["missing_evidence"]:
+                lines.extend(["**Review:** " + ", ".join(text(item) for item in decision["missing_evidence"]) + ".", ""])
+            declarations = [(role, evidence) for role in ("tactical", "transition", "alignment")
+                            for evidence in decision["evidence"].get(role, [])]
+            for role, evidence in declarations[:3]:
+                excerpt = " ".join(evidence["excerpt"].split())
+                excerpt = excerpt[:240] + ("…" if len(excerpt) > 240 else "")
+                lines.extend([f"- {role.capitalize()} ({text(evidence['file'])}:{evidence['line']}–{evidence['end_line']}): "
+                              + (text(excerpt) if excerpt else "No readable text."), ""])
+            lines.extend(["Readable evidence does not establish that the decision is justified. "
+                          "Full declarations and source ranges are in tqi-report.json → architecture_review.decision_assessments.", ""])
     lines.extend(["## Why the quality gate " + ("passed" if gate["passed"] else "failed"), "",
                   f"Configured minimum: **{gate['min_tqi']:g}/100**. Severity blocking: **{text(gate['fail_on_severity'])}**. "
                   f"Score check: {'passed' if gate['score_passed'] else 'failed'}; "

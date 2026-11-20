@@ -14,11 +14,6 @@ on:
         type: choice
         options: [advisory, standard, strict]
         default: standard
-      architecture-type:
-        description: Architecture review purpose
-        type: choice
-        options: [tactical, strategic, transition]
-        default: tactical
       c4-level:
         description: Required C4 depth
         type: choice
@@ -40,7 +35,6 @@ jobs:
           adr-path: actions/arc42-tqi/tests/fixtures/${{ inputs.fixture || 'poor' }}/docs/adr
           review-profile: arc42
           review-rigor: ${{ inputs.rigor || 'standard' }}
-          architecture-type: ${{ inputs.architecture-type || 'tactical' }}
           c4-level: ${{ inputs.c4-level || 'component' }}
           deployment-view: required
           output-dir: .arc42-tqi-preview

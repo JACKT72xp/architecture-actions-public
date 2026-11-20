@@ -29,7 +29,8 @@
     "schema_version": {
       "enum": [
         "1.0",
-        "1.1"
+        "1.1",
+        "1.2"
       ]
     },
     "scoring_version": {
@@ -3176,7 +3177,6 @@
       "required": [
         "profile",
         "rigor",
-        "architecture_type",
         "c4_level",
         "deployment_view",
         "status",
@@ -3206,8 +3206,503 @@
               }
             }
           }
+        },
+        "baseline": {
+          "const": "strategic"
+        },
+        "decision_assessments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "adr_id",
+              "title",
+              "lifecycle",
+              "source",
+              "declared_exceptions",
+              "status",
+              "missing_evidence",
+              "evidence",
+              "reason"
+            ],
+            "properties": {
+              "declared_exceptions": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "tactical",
+                    "transition"
+                  ]
+                }
+              },
+              "status": {
+                "enum": [
+                  "historical",
+                  "unknown",
+                  "evidence_available"
+                ]
+              },
+              "missing_evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "evidence": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "alignment": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "file",
+                        "line",
+                        "end_line",
+                        "section",
+                        "sha256",
+                        "excerpt",
+                        "excerpt_truncated",
+                        "status",
+                        "evidence_level"
+                      ],
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "end_line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "section": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "excerpt_truncated": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "enum": [
+                            "unknown",
+                            "evidence_available"
+                          ]
+                        },
+                        "evidence_level": {
+                          "const": "declared"
+                        }
+                      }
+                    }
+                  },
+                  "tactical": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "file",
+                        "line",
+                        "end_line",
+                        "section",
+                        "sha256",
+                        "excerpt",
+                        "excerpt_truncated",
+                        "status",
+                        "evidence_level"
+                      ],
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "end_line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "section": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "excerpt_truncated": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "enum": [
+                            "unknown",
+                            "evidence_available"
+                          ]
+                        },
+                        "evidence_level": {
+                          "const": "declared"
+                        }
+                      }
+                    }
+                  },
+                  "transition": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "file",
+                        "line",
+                        "end_line",
+                        "section",
+                        "sha256",
+                        "excerpt",
+                        "excerpt_truncated",
+                        "status",
+                        "evidence_level"
+                      ],
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "end_line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "section": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "excerpt_truncated": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "enum": [
+                            "unknown",
+                            "evidence_available"
+                          ]
+                        },
+                        "evidence_level": {
+                          "const": "declared"
+                        }
+                      }
+                    }
+                  },
+                  "review": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "file",
+                        "line",
+                        "end_line",
+                        "section",
+                        "sha256",
+                        "excerpt",
+                        "excerpt_truncated",
+                        "status",
+                        "evidence_level"
+                      ],
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "end_line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "section": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "excerpt_truncated": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "enum": [
+                            "unknown",
+                            "evidence_available"
+                          ]
+                        },
+                        "evidence_level": {
+                          "const": "declared"
+                        }
+                      }
+                    }
+                  },
+                  "exit": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "file",
+                        "line",
+                        "end_line",
+                        "section",
+                        "sha256",
+                        "excerpt",
+                        "excerpt_truncated",
+                        "status",
+                        "evidence_level"
+                      ],
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "end_line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "section": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "excerpt_truncated": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "enum": [
+                            "unknown",
+                            "evidence_available"
+                          ]
+                        },
+                        "evidence_level": {
+                          "const": "declared"
+                        }
+                      }
+                    }
+                  },
+                  "recovery": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "file",
+                        "line",
+                        "end_line",
+                        "section",
+                        "sha256",
+                        "excerpt",
+                        "excerpt_truncated",
+                        "status",
+                        "evidence_level"
+                      ],
+                      "properties": {
+                        "file": {
+                          "type": "string",
+                          "minLength": 1
+                        },
+                        "line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "end_line": {
+                          "type": "integer",
+                          "minimum": 1
+                        },
+                        "section": {
+                          "type": [
+                            "integer",
+                            "null"
+                          ],
+                          "minimum": 1,
+                          "maximum": 12
+                        },
+                        "sha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "excerpt": {
+                          "type": "string",
+                          "maxLength": 4096
+                        },
+                        "excerpt_truncated": {
+                          "type": "boolean"
+                        },
+                        "status": {
+                          "enum": [
+                            "unknown",
+                            "evidence_available"
+                          ]
+                        },
+                        "evidence_level": {
+                          "const": "declared"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "adr_id": {
+                "type": "string",
+                "minLength": 1
+              },
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lifecycle": {
+                "enum": [
+                  "accepted",
+                  "proposed",
+                  "deprecated",
+                  "superseded",
+                  null
+                ]
+              },
+              "source": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "file",
+                  "line",
+                  "end_line",
+                  "section",
+                  "sha256"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "end_line": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "section": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 1,
+                    "maximum": 12
+                  },
+                  "sha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "1.2"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "architecture_review"
+        ],
+        "properties": {
+          "architecture_review": {
+            "required": [
+              "baseline",
+              "decision_assessments"
+            ]
+          }
+        }
+      }
+    }
+  ]
 }
