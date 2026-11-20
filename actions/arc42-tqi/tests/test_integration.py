@@ -47,6 +47,11 @@ def test_mature_artifacts_schemas_and_reproducibility(mature: Path, monkeypatch:
     assert before == {path.relative_to(destination): path.read_bytes() for path in destination.rglob("*") if path.is_file()}
     assert "maturity-level=L4" in output.read_text()
     assert "100.00/100" in step_summary.read_text()
+    assert "human-report.html" in step_summary.read_text()
+    assert "human-report-path=.arc42-tqi/human-report.md" in output.read_text()
+    assert "human-report-html-path=.arc42-tqi/human-report.html" in output.read_text()
+    assert "TQI 100.00/100" in (destination / "human-report.md").read_text()
+    assert "Architecture quality report" in (destination / "human-report.html").read_text()
     assert len(report["prompt_manifest"]) == 3
     for entry in report["prompt_manifest"]:
         assert (mature / entry["path"]).is_file()
@@ -55,6 +60,7 @@ def test_mature_artifacts_schemas_and_reproducibility(mature: Path, monkeypatch:
 
 def test_poor_fixture_fails_after_export(tmp_path: Path) -> None:
     shutil.copytree(ROOT / "tests/fixtures/poor", tmp_path, dirs_exist_ok=True)
+    (tmp_path / ".arc42-tqi.yml").write_text("review: {profile: extended}\n")
     assert main(["--repo-root", str(tmp_path), "--min-tqi", "70"]) == 1
     report = json.loads((tmp_path / ".arc42-tqi/tqi-report.json").read_text())
     assert report["maturity_level"] == "L1"
@@ -62,6 +68,8 @@ def test_poor_fixture_fails_after_export(tmp_path: Path) -> None:
     rules = {item["rule_id"] for item in report["findings"]}
     assert {"ARC42_PLACEHOLDER", "ADR_MISSING", "DOC_REFERENCE", "VOL_UNCLASSIFIED"} <= rules
     assert (tmp_path / ".arc42-tqi/claims.json").is_file()
+    assert (tmp_path / ".arc42-tqi/human-report.html").is_file()
+    assert "Why the quality gate failed" in (tmp_path / ".arc42-tqi/human-report.md").read_text()
     assert main(["--repo-root", str(tmp_path), "--fail-on-severity", "high"]) == 1
     assert main(["--repo-root", str(tmp_path), "--fail-on-severity", "critical"]) == 0
 

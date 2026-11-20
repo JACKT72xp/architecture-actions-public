@@ -1,5 +1,5 @@
 name: arc42 TQI and Architecture Drift Readiness
-description: Deterministic arc42 quality scoring, ADR traceability, Git evolution signals, and modular architecture audit prompts.
+description: Deterministic arc42 documentation scoring, configurable architecture review, detailed human reports, and separate audit prompts.
 author: arc42-tqi-action maintainers
 branding:
   icon: compass
@@ -34,6 +34,26 @@ inputs:
     description: Override the configured severity gate with none, critical, high, medium, or low; empty uses configuration.
     required: false
     default: ''
+  review-profile:
+    description: 'Assessment scope: arc42 (default) or extended (legacy four-dimension rubric).'
+    required: false
+    default: ''
+  review-rigor:
+    description: 'Evidence review rigor: advisory, standard (default), or strict. Gate thresholds remain explicit.'
+    required: false
+    default: ''
+  architecture-type:
+    description: 'Review purpose: strategic, tactical (default), or transition.'
+    required: false
+    default: ''
+  c4-level:
+    description: 'Maximum required C4 depth: context, container, or component (default). Code-level diagrams are not required.'
+    required: false
+    default: ''
+  deployment-view:
+    description: 'Whether deployment evidence is required: required (default) or not-required.'
+    required: false
+    default: ''
   llm-provider:
     description: Optional provider-neutral semantic adapter; none or http-json. Semantic output cannot change scores or gates.
     required: false
@@ -66,6 +86,10 @@ outputs:
     description: Documentation maturity level L1, L2, L3, or L4; not an implementation-conformance certification.
   report-path:
     description: Repository-relative path to tqi-report.json.
+  human-report-path:
+    description: Repository-relative path to the detailed human-readable Markdown report.
+  human-report-html-path:
+    description: Repository-relative path to the offline, printable HTML report.
   claims-path:
     description: Repository-relative path to claims.yaml; equivalent claims.json is also generated.
   drift-prompts-dir:
@@ -91,3 +115,8 @@ runs:
     ARC42_TQI_LLM_ENDPOINT: ${{ inputs.llm-endpoint }}
     ARC42_TQI_COMMENT_PR: ${{ inputs.comment-pr }}
     ARC42_TQI_GITHUB_TOKEN: ${{ inputs.github-token }}
+    ARC42_TQI_REVIEW_PROFILE: ${{ inputs.review-profile }}
+    ARC42_TQI_REVIEW_RIGOR: ${{ inputs.review-rigor }}
+    ARC42_TQI_ARCHITECTURE_TYPE: ${{ inputs.architecture-type }}
+    ARC42_TQI_C4_LEVEL: ${{ inputs.c4-level }}
+    ARC42_TQI_DEPLOYMENT_VIEW: ${{ inputs.deployment-view }}

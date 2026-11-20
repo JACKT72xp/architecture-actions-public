@@ -14,6 +14,15 @@ No private repositories, vector databases, LLM keys, cloud credentials, or hoste
 service are required. This project implements its own parsers and rules; it does
 not embed docToolchain, log4brains, CodeScene, or ArchUnit.
 
+## Review scope and rigor
+
+The default `arc42` profile scores structure and decision evidence. Volatility,
+Git history, and audit readiness are excluded from its score and gate. Configure
+`review-rigor`, `architecture-type`, `c4-level`, and `deployment-view` in the Action.
+See [review profiles and RAG boundaries](docs/review-profiles.md) for evidence
+mapping, examples, and migration from the `extended` legacy rubric. This is an
+unreleased scoring change; published v0.1.0 behavior is unchanged.
+
 ## Quick start
 
 Install Python 3.12+ and run from the repository being assessed:
@@ -55,6 +64,11 @@ jobs:
         with:
           docs-path: docs
           adr-path: docs/adr
+          review-profile: arc42
+          review-rigor: standard
+          architecture-type: tactical
+          c4-level: component
+          deployment-view: required
           min-tqi: '70'
           fail-on-severity: high
       - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
@@ -69,6 +83,30 @@ Artifacts and step outputs are written **before** a quality gate fails. A missin
 docs/ADR directory produces actionable findings rather than a traceback. An invalid
 configuration, unsafe input/output path, or write failure exits with status 2.
 
+## Start with the human report
+
+Download the workflow artifact and open **human-report.html** in a browser. It is
+self-contained, works offline, requires no LLM, and can be printed. The equivalent
+**human-report.md** is suitable for GitHub and Markdown viewers. Both are generated
+even when a quality gate fails, alongside the existing machine-readable evidence.
+
+The report explains the score's weighted contributions, why the gate passed or
+failed, priority documentation risks and next steps, all 12 sections, structured
+evidence coverage, every metric, and every finding with its source, review implication, concrete task, and completion criteria.
+It distinguishes parser recognition gaps from verified architecture defects and
+labels optional semantic observations separately. It does not rescore the analysis
+or certify implementation conformance. `summary.md` remains a compact CI overview.
+
+To add human reports to an older downloaded bundle, install this checkout with
+`python -m pip install -e .`, then run:
+
+```sh
+PYTHONPATH=src python scripts/render_human_report.py --artifacts /path/to/downloaded-artifact
+```
+
+This reads matching `tqi-report.json` and `claims.json` snapshots and adds only the
+two human-report files. It does not modify the saved JSON, claims, or audit prompts.
+
 ## Inputs and outputs
 
 | Input | Default | Behavior |
@@ -79,6 +117,11 @@ configuration, unsafe input/output path, or write failure exits with status 2.
 | `config-path` | empty | Auto-discover `.arc42-tqi.yml`; explicit missing path is an error |
 | `output-dir` | `.arc42-tqi` | Dedicated artifact directory inside the checkout |
 | `min-tqi` | empty | Override config minimum; default config is 0 |
+| `review-profile` | empty → arc42 | `arc42` or legacy `extended` |
+| `review-rigor` | empty → standard | `advisory`, `standard`, or `strict` |
+| `architecture-type` | empty → tactical | `strategic`, `tactical`, or `transition` |
+| `c4-level` | empty → component | `context`, `container`, or `component` |
+| `deployment-view` | empty → required | `required` or `not-required` |
 | `fail-on-severity` | empty | Override `none`, `critical`, `high`, `medium`, or `low` |
 | `llm-provider` | `none` | `none` or opt-in `http-json` semantic adapter |
 | `llm-model` | empty | Adapter model identifier |
@@ -87,7 +130,8 @@ configuration, unsafe input/output path, or write failure exits with status 2.
 | `comment-pr` | `false` | Upsert same-repository PR bot comment |
 | `github-token` | `${{ github.token }}` | Used only when comments are enabled |
 
-Outputs: `tqi-score`, `maturity-level`, `report-path`, `claims-path`,
+Outputs: `tqi-score`, `maturity-level`, `report-path`, `human-report-path`,
+`human-report-html-path`, `claims-path`,
 `drift-prompts-dir`, and `findings-count`. Artifact paths are checkout-relative.
 `fail-on-severity: high` blocks critical **and** high findings. Defaults collect
 evidence without blocking. CLI flags mirror non-secret inputs (`--comment-pr` enables comments). Secret
@@ -103,10 +147,12 @@ to run an untrusted checkout. The deterministic mode needs only `contents: read`
 
 | Dimension | Default weight | Evidence |
 | --- | ---: | --- |
-| Structure | 25% | Twelve canonical sections, critical-section depth, placeholders, local links, headings |
-| Decisions | 25% | ADR fields, lifecycle, alternatives/consequences, quality attributes, section links |
-| Volatility | 25% | Classified change axes, information-hiding boundaries, impact, mitigation, Git hotspots |
-| Drift readiness | 25% | Six claim categories, typed completeness, provenance, atomic checks, referential integrity |
+| Structure | 50% | Twelve canonical sections, critical-section depth, placeholders, local links, headings |
+| Decisions | 50% | ADR fields, lifecycle, alternatives/consequences, quality attributes, section links |
+| Volatility (extended only) | 0% | Classified change axes, information-hiding boundaries, impact, mitigation, Git hotspots |
+| Drift readiness (extended only) | 0% | Six claim categories, typed completeness, provenance, atomic checks, referential integrity |
+
+The explicit `extended` profile uses 25% for each of the four dimensions.
 
 Every metric exposes its numerator, denominator, ratio, weight, and definition.
 See [the exact scoring specification](docs/scoring.md). Repository overrides are
@@ -160,6 +206,8 @@ tqi-report.json
 claims.yaml
 claims.json
 summary.md
+human-report.md
+human-report.html
 drift-prompts/
   drift-against-code.md
   drift-against-cloud.md

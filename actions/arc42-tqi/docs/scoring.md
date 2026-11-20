@@ -1,4 +1,10 @@
-# Scoring specification 1.0
+# Scoring specifications 1.0 and 2.0
+
+The default `arc42` profile (2.0) scores structure and decisions at 50/50.
+Volatility and drift metrics are N/A with zero weight and no findings or gates.
+C4/deployment/purpose expectations produce review findings separately from the
+score; their severity follows configured rigor. See [review profiles](review-profiles.md).
+The explicit `extended` profile preserves the four-dimension 1.0 rubric below.
 
 TQI is a deterministic index of **documented evidence**. Each metric stores integers
 `satisfied` and `applicable`; its ratio is `satisfied / applicable`. A zero denominator
@@ -13,7 +19,7 @@ D[d] = 100 × sum(w[m] × satisfied[m] / applicable[m]) / sum(w[m])
 TQI  = round_half_up(sum(W[d] × D[d]) / sum(W[d]), 2)
 ```
 
-All four dimension weights default to 25. Calculations use exact rational arithmetic (`Fraction`); only final TQI is
+In the extended profile, all four dimension weights default to 25. Calculations use exact rational arithmetic (`Fraction`); only final TQI is
 rounded half-up to two decimals. Dimension values are serialized as floats. If all positive-weight metrics in a dimension are N/A,
 the dimension scores zero. Zero weights disable a contribution; weight groups must
 have a positive total. Maturity is derived from the final rounded TQI: L1 below 40,
@@ -53,7 +59,7 @@ Proposed decisions are legitimate lifecycle records, not automatically stale. Th
 is no wall-clock-based freshness penalty. Only accepted decisions become active
 claims. Dates alone cannot establish that a design decision remains valid.
 
-## Volatility
+## Volatility (extended only)
 
 Axes: `business_rules`, `external_integrations`, `data_schemas`,
 `security_compliance`, `infrastructure`. No project is required to have every axis.
@@ -85,7 +91,7 @@ Unavailable, shallow, or fewer-than-two-commit history is N/A, as is a window
 without evolutionary signals. Truncated windows still contribute measured signals. These limits appear in the report. No LLM infers hidden change
 coupling, and file churn is not proof of faulty architecture.
 
-## Drift readiness
+## Drift readiness (extended only)
 
 | Metric | Weight | Exact numerator / denominator |
 | --- | ---: | --- |

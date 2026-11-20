@@ -29,6 +29,11 @@ def analyze(
     output_dir: Annotated[str, typer.Option(envvar="ARC42_TQI_OUTPUT_DIR")] = ".arc42-tqi",
     min_tqi: Annotated[float | None, typer.Option(envvar="ARC42_TQI_MIN_TQI")] = None,
     fail_on_severity: Annotated[str | None, typer.Option(envvar="ARC42_TQI_FAIL_ON_SEVERITY")] = None,
+    review_profile: Annotated[str, typer.Option(envvar="ARC42_TQI_REVIEW_PROFILE")] = "",
+    review_rigor: Annotated[str, typer.Option(envvar="ARC42_TQI_REVIEW_RIGOR")] = "",
+    architecture_type: Annotated[str, typer.Option(envvar="ARC42_TQI_ARCHITECTURE_TYPE")] = "",
+    c4_level: Annotated[str, typer.Option(envvar="ARC42_TQI_C4_LEVEL")] = "",
+    deployment_view: Annotated[str, typer.Option(envvar="ARC42_TQI_DEPLOYMENT_VIEW")] = "",
     llm_provider: Annotated[str, typer.Option(envvar="ARC42_TQI_LLM_PROVIDER")] = "none",
     llm_model: Annotated[str, typer.Option(envvar="ARC42_TQI_LLM_MODEL")] = "",
     llm_endpoint: Annotated[str, typer.Option(envvar="ARC42_TQI_LLM_ENDPOINT")] = "",
@@ -37,7 +42,12 @@ def analyze(
     try:
         root = repo_root.resolve()
         report, claims = analyze_repository(root, docs_path, adr_path, diagrams_path, config_path,
-                                            output_dir, min_tqi, fail_on_severity)
+                                            output_dir, min_tqi, fail_on_severity,
+                                            {key: value for key, value in {
+                                                "profile": review_profile, "rigor": review_rigor,
+                                                "architecture_type": architecture_type, "c4_level": c4_level,
+                                                "deployment_view": deployment_view,
+                                            }.items() if value})
         report["semantic_enrichment"] = enrich(
             llm_provider, llm_endpoint, llm_model, os.environ.get("ARC42_TQI_LLM_API_KEY", ""), report, claims,
         )
