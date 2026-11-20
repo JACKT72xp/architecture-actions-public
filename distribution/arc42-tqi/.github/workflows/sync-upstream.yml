@@ -38,7 +38,7 @@ jobs:
         env:
           HAS_SYNC_TOKEN: ${{ secrets.DISTRIBUTION_SYNC_TOKEN != '' }}
         run: |
-          if test "$HAS_SYNC_TOKEN" != true && ! git diff --quiet -- .github/workflows; then
+          if test "$HAS_SYNC_TOKEN" != true && test -n "$(git status --porcelain -- .github/workflows)"; then
             echo 'Workflow updates require DISTRIBUTION_SYNC_TOKEN with Workflows write permission.'
             echo 'Alternatively, export locally and push a sync branch using your maintainer credentials. See DISTRIBUTION.md.'
             exit 1
