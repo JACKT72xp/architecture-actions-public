@@ -11,8 +11,9 @@ linked ADRs, explicit claims, and diagram references. Export an auditable **Tech
 Quality Index (TQI)** and modular prompts for code, cloud, and diagram audits.
 
 No private repositories, vector databases, LLM keys, cloud credentials, or hosted
-service are required. This project implements its own parsers and rules; it does
-not embed docToolchain, log4brains, CodeScene, or ArchUnit.
+service are required. This project implements its own parsers and rules. docToolchain, log4brains,
+CodeScene, and ArchUnit informed its design; they are not embedded dependencies.
+See [software influences and credits](../README.md#software-projects-that-informed-the-design).
 
 ## Review scope and rigor
 

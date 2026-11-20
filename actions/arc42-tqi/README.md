@@ -86,7 +86,26 @@ The scoring weights, thresholds, and recognized ADR heading conventions are
 project-specific rules. This is an independent implementation, not an official
 arc42 or C4 product.
 
-## Tools used
+## Software projects that informed the design
+
+The implementation uses established software patterns as well as the methods
+above. Our [design notes](docs/architecture.md#reference-patterns) record these influences:
+
+| Reference project | What it informed in this Action |
+| --- | --- |
+| [docToolchain](https://doctoolchain.org/) | Docs-as-code organization and the graph of sections, files, and includes |
+| [log4brains](https://github.com/thomvaill/log4brains) | ADRs as identifiable records with lifecycle and relationships |
+| [ArchUnit](https://www.archunit.org/userguide/html/000_Index.html) | Explicit, verifiable architecture assertions for downstream conformance checks |
+| [CodeScene](https://docs.enterprise.codescene.io/versions/3.5.22/guides/technical/temporal-coupling.html) | Bounded hotspot and change-coupling signals in the optional `extended` profile; excluded from default arc42 scoring |
+
+These projects informed the design; they are not bundled engines or runtime
+dependencies, and we do not claim their full capabilities. The parsers, scoring,
+and report generation are implemented in this repository. Static-linter patterns
+also informed deterministic findings. The extended profile additionally draws on
+Parnas's information-hiding and Löwy's volatility-oriented decomposition, as
+recorded in the design notes; neither introduces volatility into default arc42 TQI.
+
+## Runtime and validation tools
 
 **Python 3.12 + Docker** run the analyzer. **markdown-it-py** parses Markdown;
 AsciiDoc recognition uses project-specific parsing. **PyYAML** reads configuration
@@ -94,7 +113,8 @@ and structured evidence, **Pydantic** validates typed contracts, and **Typer**
 provides the CLI. **GitHub Actions**, `actions/checkout`, and
 `actions/upload-artifact` execute the workflow and deliver its reports.
 Validation uses pytest, JSON Schema, Ruff, mypy, dependency auditing, and container
-smoke tests. The project does not embed docToolchain, log4brains, CodeScene, or ArchUnit.
+smoke tests. These are the execution and validation tools, distinct from the
+reference projects credited above.
 
 ## License
 
