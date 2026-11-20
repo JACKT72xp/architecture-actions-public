@@ -88,3 +88,9 @@ jobs:
       - name: Validate exported workflow syntax
         working-directory: ${{ runner.temp }}/distribution
         run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.7 -ignore 'file "/usr/local/bin/arc42-tqi" does not exist' .github/workflows/*.yml
+
+      - name: Smoke-test exported image with Linux filesystem ownership
+        working-directory: ${{ runner.temp }}/distribution
+        run: |
+          docker build -t arc42-tqi:upstream-export .
+          python scripts/smoke_image.py --image arc42-tqi:upstream-export --platform linux/amd64

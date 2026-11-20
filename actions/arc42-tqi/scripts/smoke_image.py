@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -31,6 +32,9 @@ def main() -> None:
                             ignore=shutil.ignore_patterns(".arc42-tqi"))
             command = [
                 "docker", "run", "--rm", "--network", "none", "--platform", args.platform,
+                # Keep fixture artifacts owned by the test runner so Linux cleanup can remove them.
+                # The separate action-smoke CI job exercises GitHub's default root Docker invocation.
+                "--user", f"{os.getuid()}:{os.getgid()}",
                 "-v", f"{target}:/github/workspace",
                 "-e", "GITHUB_OUTPUT=/github/workspace/github-output",
                 "-e", "GITHUB_STEP_SUMMARY=/github/workspace/github-summary",
