@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.2
+
+- Shorten Action metadata to meet the GitHub Marketplace description limit.
+- Validate Marketplace metadata in CI to prevent publication regressions.
+- Includes the concise human summaries from v0.2.1; scoring, gates, inputs, and outputs are unchanged.
+
 ## 0.2.1
 
 Start with `human-summary.html` for the concise assessment. Existing detailed

@@ -45,8 +45,9 @@ jobs:
               "The Action builds its bundled Dockerfile and needs no GHCR credentials.\n\n"
               "Validation: source provenance, tests, lint, types, wheel, dependency audit, "
               "real Action outputs, and AMD64/ARM64 container smoke tests.\n\n"
-              "Before publishing, add scoring/compatibility changes and select Publish this "
-              "Action to the GitHub Marketplace in the release editor.\n"
+              f"Use `JACKT72xp/arc42-tqi-action@{version}` in your workflow. "
+              "Open `human-summary.html` for the concise view or `human-report.html` "
+              "for the full assessment.\n"
           )
           Path(os.environ['RUNNER_TEMP'], 'release-notes.md').write_text(body)
           PY

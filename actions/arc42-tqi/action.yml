@@ -1,5 +1,5 @@
 name: arc42 TQI and Architecture Drift Readiness
-description: Deterministic arc42 documentation scoring, configurable architecture review, detailed human reports, and separate audit prompts.
+description: Assess arc42 documentation with deterministic TQI scores, architecture review, concise summaries, and detailed reports.
 author: arc42-tqi-action maintainers
 branding:
   icon: compass
