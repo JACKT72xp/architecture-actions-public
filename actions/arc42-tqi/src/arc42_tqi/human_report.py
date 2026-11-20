@@ -81,6 +81,105 @@ def observation(report: dict[str, Any], claims: dict[str, Any], dimension: str) 
             + "Prose or diagrams can describe these concepts without satisfying the structured claim contract.")
 
 
+def counted(count: int, noun: str) -> str:
+    return f"{count} {noun}" + ("" if count == 1 else "s")
+
+
+def review_explanation(check: dict[str, Any]) -> tuple[str, str]:
+    """Describe reference coverage without claiming that the design is absent or correct."""
+    valid, rejected = len(check["sources"]), len(check["rejected_sources"])
+    if check["status"] == "evidence_available":
+        return ("Ready for human review", f"{counted(valid, 'source reference')} {'is' if valid == 1 else 'are'} readable. A reviewer still needs to confirm what they explain.")
+    if rejected:
+        return ("Fix evidence links", f"{counted(rejected, 'source reference')} could not be used; {valid} are readable. Correct the rejected file or line ranges before reviewing coverage.")
+    return ("Evidence not linked", "No source references have been linked for this check. The documentation may already exist; its absence has not been established.")
+
+
+def executive_brief(report: dict[str, Any], links: bool = True) -> str:
+    """A bounded decision aid, independent of repository size and raw evidence length."""
+    gate = report["quality_gate"]
+    findings = report["findings"]
+    active = [(name, report["dimensions"][name]) for name in DIMENSIONS if report["dimensions"][name]["weight"] > 0]
+    counts = Counter(item["severity"] for item in findings)
+    lines = ["## At a glance", "", f"Gate: **{'passed' if gate['passed'] else 'failed'}**."]
+    if gate["min_tqi"] == 0 and gate["fail_on_severity"] == "none":
+        lines.append("Reporting only: this run does not block on score or findings. Passing is not architecture approval.")
+    else:
+        lines.append(f"Required score: {gate['min_tqi']:g}/100; blocking severity: {text(gate['fail_on_severity'])} or higher. "
+                     f"{len(gate['blocking_finding_ids'])} findings block the gate.")
+    lines.extend(["", f"**{counted(len(findings), 'finding')}:** " + ", ".join(f"{counts[level]} {level}" for level in SEVERITIES) + ". "
+                  "Counts describe documentation checks, not production incidents.", "",
+                  "**Why this score:** " + "; ".join(
+                      f"{LABELS.get(name, name)} {value['score']:.1f}/100 (contributes {value['weighted_contribution']:.1f} points)"
+                      for name, value in active) + ".", "",
+                  "## Three priorities", ""])
+    groups: dict[str, list[dict[str, Any]]] = {}
+    for item in findings:
+        rule = item["rule_id"]
+        group = ("review" if rule.startswith("REVIEW_") else "decisions" if rule.startswith("ADR_")
+                 else "placeholders" if rule == "ARC42_PLACEHOLDER" else "sections" if rule.startswith("ARC42_")
+                 else "references" if rule in {"DOC_REFERENCE", "DOC_INCLUDE"} else "other")
+        groups.setdefault(group, []).append(item)
+    blocking = set(gate["blocking_finding_ids"])
+    def order(key: str) -> tuple[bool, int, int, str]:
+        items = groups[key]
+        return (not any(item["id"] in blocking for item in items),
+                min(SEVERITIES.index(item["severity"]) for item in items), -len(items), key)
+    guidance = {
+        "review": ("Link the architecture evidence", "Point each required view to existing documentation. Missing mappings prevent review; they do not prove that a view is missing."),
+        "decisions": ("Make decisions traceable", "Review the ADRs and record the rationale, alternatives, current status, and links to affected sections."),
+        "placeholders": ("Replace unfinished template text", "Complete the remaining placeholders with project-specific decisions, requirements, or clearly owned open questions."),
+        "sections": ("Complete the section gaps", "Check the scanned headings and paths, then fill the sections that are missing or too thin."),
+        "references": ("Repair document links", "Correct broken references so readers can reach the supporting evidence."),
+        "other": ("Review the remaining evidence checks", "Use the detailed report to inspect the recorded evidence before deciding which documentation needs correction."),
+    }
+    ordered = sorted(groups, key=order)
+    for index, key in enumerate(ordered[:3], 1):
+        items = groups[key]
+        title, task = guidance[key]
+        files = len({item["file"] for item in items if item["file"]})
+        coverage = counted(len(items), "finding") + (f" across {counted(files, 'file')}" if files else " at repository scope")
+        if files and any(not item["file"] for item in items):
+            coverage += " and repository-wide checks"
+        first = min(items, key=lambda item: (SEVERITIES.index(item["severity"]), item.get("section") or 99, item["id"]))
+        if first.get("section"):
+            task += f" Start with section {first['section']}."
+        elif first["file"]:
+            location = first["file"]
+            task += " Start with " + text(location[:80] + ("…" if len(location) > 80 else "")) + "."
+        lines.extend([f"{index}. **{title}** — {coverage}. {task}", ""])
+    if not findings:
+        lines.extend(["No automated findings. A human architecture review is still required.", ""])
+    elif len(ordered) > 3:
+        remaining = sum(len(groups[key]) for key in ordered[3:])
+        lines.extend([f"Another {remaining} findings in {len(ordered) - 3} groups are covered in the full report.", ""])
+    if findings:
+        lines.extend(["Groups are ordered by gate blockers, highest severity, then count. Grouping does not change the score or remove findings.", ""])
+    review = report.get("architecture_review", {})
+    checks = review.get("checks", [])
+    if checks:
+        unknown = sum(check["status"] != "evidence_available" for check in checks)
+        lines.extend(["## Architecture review", "",
+                      f"{unknown} of {len(checks)} configured expectations need evidence links or corrections. "
+                      "Readable references still require a human content review.", ""])
+    deployment = next((check for check in checks if check["id"] == "deployment"), None)
+    if deployment:
+        status, explanation = review_explanation(deployment)
+        lines.extend([f"**Deployment view — {status.lower()}.** {explanation}", "",
+                      "Next: identify the view explaining which applications run on which infrastructure, in which environment, "
+                      "and how they connect. Link that existing view and its explanation in section 7; then review the mapping together.", ""])
+    lines.extend(["TQI measures recognized documentation evidence, not architecture correctness. Missing links are not proof of missing design.", ""])
+    if links:
+        lines.extend(["[Full human report](human-report.html) · [Markdown details](human-report.md) · [Machine evidence](tqi-report.json)", ""])
+    return "\n".join(lines)
+
+
+def human_summary(report: dict[str, Any]) -> str:
+    return ("# Architecture summary\n\n"
+            f"**TQI {report['tqi_score']:.2f}/100 · {text(report['maturity_level'])}**\n\n"
+            + executive_brief(report))
+
+
 def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
     """Explain existing report values; retain every finding and its evidence."""
     active_dimensions = tuple(name for name in DIMENSIONS if report["dimensions"][name]["weight"] > 0)
@@ -125,15 +224,18 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                       "Rigor sets the severity of missing or invalid review references: advisory = low, standard = medium, strict = high. "
                       "It does not establish semantic correctness. Thresholds remain explicitly configured.", ""])
         for check in review["checks"]:
-            lines.extend([f"### {text(check['title'])}: {text(check['status'])}", "",
-                          text(check["expectation"]), "", "**Assessment:** " + text(check["reason"]), ""])
-            for source in check["sources"]:
-                lines.extend([f"Declared evidence: {text(source['file'])}:{source['line']}–{source['end_line']} "
-                              f"(SHA-256 {text(source['sha256'])}).", "", text(source["excerpt"]), ""])
-                if source.get("excerpt_truncated"):
-                    lines.extend(["Excerpt truncated at 4,096 characters; inspect the referenced source range for the complete evidence.", ""])
-            for source in check["rejected_sources"]:
-                lines.extend([f"Rejected reference: {text(source['file'])}:{source['line']}–{source['end_line']}. " + text(source["reason"]), ""])
+            status, explanation = review_explanation(check)
+            lines.extend([f"### {text(check['title'])} — {status}", "", text(explanation), "",
+                          "**What to review:** " + text(check["expectation"]), ""])
+            examples = [(source, "Needs correction") for source in check["rejected_sources"]] + [
+                (source, "Readable") for source in check["sources"]]
+            for source, label in examples[:3]:
+                location = f"{source['file']}:{source['line']}–{source['end_line']}"
+                lines.append(f"- {label}: {text(location)}" + (" — " + text(source["reason"]) if label == "Needs correction" else ""))
+            if len(examples) > 3:
+                lines.append(f"- {len(examples) - 3} more references are in tqi-report.json → architecture_review.checks.")
+            if examples:
+                lines.extend(["", "Full source ranges, excerpts, and hashes remain in the machine evidence; up to three example locations are shown here.", ""])
     lines.extend(["## Why the quality gate " + ("passed" if gate["passed"] else "failed"), "",
                   f"Configured minimum: **{gate['min_tqi']:g}/100**. Severity blocking: **{text(gate['fail_on_severity'])}**. "
                   f"Score check: {'passed' if gate['score_passed'] else 'failed'}; "
@@ -238,10 +340,13 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
     findings = sorted(report["findings"], key=lambda item: (SEVERITIES.index(item["severity"]), item["file"], item["rule_id"], item["id"]))
     for item in findings:
         implication, task, done = finding_detail(item)
-        lines.extend([f"### {text(item['severity'].capitalize())} · {text(item['rule_id'])} · {text(item['id'])}", "",
-                      f"**Finding:** {text(item['message'])}", "",
+        check = next((check for check in (review or {}).get("checks", [])
+                      if item["rule_id"] == "REVIEW_" + check["id"].upper()), None)
+        evidence = review_explanation(check)[1] if check else item["evidence"]
+        lines.extend([f"### {text(item['message'])} ({text(item['severity'])})", "",
+                      f"Reference: {text(item['rule_id'])} · {text(item['id'])}", "",
                       f"**Location:** {text(item['file'] or 'Repository scope')} — {text(section_name(report, item['section']))}", "",
-                      f"**Recorded evidence:** {text(item['evidence'])}", "",
+                      f"**Recorded evidence:** {text(evidence)}", "",
                       f"**Why this matters:** {text(implication)}", "",
                       f"**Recommended action:** {text(item['remediation'])}", "",
                       f"**Review task:** {text(task)}", "",
@@ -276,7 +381,7 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                   "- [Short workflow summary](summary.md)", "",
                   "Use the drift-prompts directory for a separate audit with actual implementation evidence. "
                   "These prompts have not executed an audit. This report explains the saved result without changing or rescoring it.", ""])
-    return "\n".join(lines)
+    return "\n".join(lines[:4]) + "\n\n" + executive_brief(report, links=False) + "\n" + "\n".join(lines[4:])
 
 
 def human_html(markdown: str) -> str:

@@ -7,7 +7,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from arc42_tqi.human_report import human_html, human_report
+from arc42_tqi.human_report import human_html, human_report, human_summary
 
 
 def main() -> None:
@@ -22,9 +22,10 @@ def main() -> None:
     if report.get("metadata") != claims.get("metadata"):
         parser.error("The report and claims must belong to the same analyzed snapshot")
     markdown = human_report(report, claims)
+    brief = human_summary(report)
     destination = (args.output_dir or args.artifacts).resolve()
     destination.mkdir(parents=True, exist_ok=True)
-    for name, content in (("human-report.md", markdown), ("human-report.html", human_html(markdown))):
+    for name, content in (("human-summary.md", brief), ("human-summary.html", human_html(brief)), ("human-report.md", markdown), ("human-report.html", human_html(markdown))):
         target = destination / name
         if target.is_symlink():
             parser.error("Human-report outputs must not be symbolic links")

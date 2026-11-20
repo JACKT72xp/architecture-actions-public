@@ -46,8 +46,12 @@ def assess_review(tree: DocumentTree, config: dict[str, Any]) -> tuple[dict[str,
             content = tree.files.get(source["file"])
             lines = content.splitlines() if content is not None else []
             excerpt = "\n".join(lines[source["line"] - 1:source["end_line"]])
-            if source["end_line"] > len(lines) or not excerpt.strip() or PLACEHOLDER.search(excerpt):
-                rejected.append({**source, "reason": "Source is outside scanned text, out of range, empty, or contains placeholders"})
+            reason = ("File was not included in the scanned documentation" if content is None
+                      else "Line range extends beyond the end of the file" if source["end_line"] > len(lines)
+                      else "Selected lines are empty" if not excerpt.strip()
+                      else "Selected lines contain unfinished template text" if PLACEHOLDER.search(excerpt) else None)
+            if reason:
+                rejected.append({**source, "reason": reason})
             else:
                 sources.append({**source, "excerpt": excerpt[:4096], "excerpt_truncated": len(excerpt) > 4096,
                                 "sha256": hashlib.sha256((content or "").encode()).hexdigest(), "evidence_level": "declared"})

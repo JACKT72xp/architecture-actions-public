@@ -79,7 +79,7 @@ def test_source_evidence_stays_inert_in_html(mature: Path) -> None:
     parsed.feed(document)
     assert "script" not in parsed.tags and "img" not in parsed.tags
     assert not any(name.lower().startswith("on") for name, _ in parsed.attributes)
-    assert all(value and (value.startswith("#") or value in {"tqi-report.json", "claims.json", "summary.md"})
+    assert all(value and (value.startswith("#") or value in {"tqi-report.json", "claims.json", "summary.md", "human-report.html", "human-report.md"})
                for name, value in parsed.attributes if name == "href")
     assert "&lt;script&gt;" in document
     assert "Content-Security-Policy" in document
