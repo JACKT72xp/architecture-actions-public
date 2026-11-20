@@ -1,0 +1,24 @@
+name: Architecture quality
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: JACKT72xp/architecture-actions-public/actions/arc42-tqi@COMMIT_SHA
+        id: architecture
+        with:
+          docs-path: docs
+          adr-path: docs/adr
+          min-tqi: '70'
+          fail-on-severity: high
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: architecture-evidence
+          path: .arc42-tqi/
+          include-hidden-files: true

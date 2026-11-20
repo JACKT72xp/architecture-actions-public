@@ -1,0 +1,3073 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "arc42-tqi report contract, Phase 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "scoring_version",
+    "tool",
+    "metadata",
+    "tqi_score",
+    "maturity_level",
+    "conformance_status",
+    "dimensions",
+    "effective_config",
+    "sections",
+    "adrs",
+    "traceability_edges",
+    "history",
+    "source_inventory",
+    "findings",
+    "diagnostics",
+    "limitations",
+    "quality_gate",
+    "semantic_enrichment",
+    "prompt_manifest"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "scoring_version": {
+      "const": "1.0"
+    },
+    "tool": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "name",
+        "version",
+        "python_version",
+        "git_version"
+      ],
+      "properties": {
+        "name": {
+          "const": "arc42-tqi-action"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "python_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "git_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "commit",
+        "shallow_clone",
+        "git_available",
+        "tracked_worktree_dirty",
+        "head_commit_time",
+        "source_tree_sha256",
+        "config_sha256"
+      ],
+      "properties": {
+        "repository": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$"
+        },
+        "shallow_clone": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "git_available": {
+          "type": "boolean"
+        },
+        "tracked_worktree_dirty": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "head_commit_time": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "source_tree_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "config_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "tqi_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "maturity_level": {
+      "enum": [
+        "L1",
+        "L2",
+        "L3",
+        "L4"
+      ]
+    },
+    "conformance_status": {
+      "const": "not_evaluated"
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "structure",
+        "decisions",
+        "volatility",
+        "drift"
+      ],
+      "properties": {
+        "structure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "weight",
+            "normalized_weight",
+            "weighted_contribution",
+            "metrics"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "normalized_weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "weighted_contribution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "metrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "coverage",
+                "depth",
+                "placeholders",
+                "references",
+                "headings",
+                "diagrams"
+              ],
+              "properties": {
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "depth": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "placeholders": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "references": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "headings": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "diagrams": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "decisions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "weight",
+            "normalized_weight",
+            "weighted_contribution",
+            "metrics"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "normalized_weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "weighted_contribution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "metrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "completeness",
+                "lifecycle",
+                "tradeoffs",
+                "quality_attributes",
+                "bidirectional_traceability"
+              ],
+              "properties": {
+                "completeness": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "lifecycle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "tradeoffs": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "quality_attributes": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "bidirectional_traceability": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "volatility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "weight",
+            "normalized_weight",
+            "weighted_contribution",
+            "metrics"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "normalized_weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "weighted_contribution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "metrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "classification",
+                "encapsulation",
+                "impact_mitigation",
+                "evolution"
+              ],
+              "properties": {
+                "classification": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "encapsulation": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "impact_mitigation": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "evolution": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "drift": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "score",
+            "weight",
+            "normalized_weight",
+            "weighted_contribution",
+            "metrics"
+          ],
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "normalized_weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "weighted_contribution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "metrics": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "coverage",
+                "completeness",
+                "provenance",
+                "atomic_verifiability",
+                "integrity"
+              ],
+              "properties": {
+                "coverage": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "completeness": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "provenance": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "atomic_verifiability": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                },
+                "integrity": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "satisfied",
+                    "applicable",
+                    "ratio",
+                    "deficit_ratio",
+                    "weight",
+                    "normalized_weight",
+                    "weighted_penalty",
+                    "status",
+                    "definition",
+                    "reason",
+                    "evidence_refs"
+                  ],
+                  "properties": {
+                    "satisfied": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "applicable": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "deficit_ratio": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weight": {
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1000000
+                    },
+                    "normalized_weight": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "weighted_penalty": {
+                      "type": [
+                        "number",
+                        "null"
+                      ],
+                      "minimum": 0,
+                      "maximum": 100
+                    },
+                    "status": {
+                      "enum": [
+                        "measured",
+                        "not_applicable"
+                      ]
+                    },
+                    "definition": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "reason": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "evidence_refs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "minLength": 1
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "effective_config": {
+      "allOf": [
+        { "$ref": "config.schema.json" },
+        {
+          "required": ["version", "weights", "metrics", "critical_sections", "min_section_words", "min_tqi", "fail_on_severity", "applicability", "history", "prompts", "limits"],
+          "properties": {
+            "weights": { "required": ["structure", "decisions", "volatility", "drift"] },
+            "metrics": {
+              "required": ["structure", "decisions", "volatility", "drift"],
+              "properties": {
+                "structure": { "required": ["coverage", "depth", "placeholders", "references", "headings", "diagrams"] },
+                "decisions": { "required": ["completeness", "lifecycle", "tradeoffs", "quality_attributes", "bidirectional_traceability"] },
+                "volatility": { "required": ["classification", "encapsulation", "impact_mitigation", "evolution"] },
+                "drift": { "required": ["coverage", "completeness", "provenance", "atomic_verifiability", "integrity"] }
+              }
+            },
+            "applicability": {
+              "required": ["components", "dependencies", "flows", "cloud_resources", "volatility_zones", "constraints_and_adrs"],
+              "additionalProperties": { "required": ["required", "reason"] }
+            },
+            "history": { "required": ["enabled", "max_commits", "hotspot_changes", "coupling_min_support", "coupling_threshold", "stale_after_days", "timeout_seconds"] },
+            "prompts": { "required": ["max_claims_per_prompt", "max_embedded_chars", "max_findings_per_prompt"] },
+            "limits": { "required": ["max_files", "max_file_bytes", "max_total_bytes", "max_expanded_bytes", "max_include_depth", "max_claims", "max_git_output_bytes"] }
+          }
+        }
+      ]
+    },
+    "sections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "canonical_name",
+          "sources",
+          "substantive_words",
+          "placeholder_count",
+          "critical",
+          "present"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "canonical_name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sources": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "file",
+                "line",
+                "end_line",
+                "section",
+                "sha256"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "section": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          },
+          "substantive_words": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "placeholder_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "critical": {
+            "type": "boolean"
+          },
+          "present": {
+            "type": "boolean"
+          }
+        }
+      },
+      "minItems": 12,
+      "maxItems": 12
+    },
+    "adrs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "status",
+          "source",
+          "context",
+          "decision",
+          "alternatives",
+          "consequences",
+          "quality_attributes",
+          "arc42_sections",
+          "supersedes",
+          "superseded_by",
+          "related",
+          "reviewed_against"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "proposed",
+              "accepted",
+              "deprecated",
+              "superseded",
+              null
+            ]
+          },
+          "source": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "line",
+              "end_line",
+              "section",
+              "sha256"
+            ],
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "end_line": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "section": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "minimum": 1,
+                "maximum": 12
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            }
+          },
+          "context": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "decision": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "alternatives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "name",
+                "rejection_reason"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "rejection_reason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              }
+            }
+          },
+          "consequences": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "positive",
+              "negative"
+            ],
+            "properties": {
+              "positive": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "negative": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          },
+          "quality_attributes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "arc42_sections": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 12
+            },
+            "uniqueItems": true
+          },
+          "supersedes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "superseded_by": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "uniqueItems": true
+          },
+          "reviewed_against": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$"
+            },
+            "uniqueItems": true
+          }
+        }
+      }
+    },
+    "traceability_edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "adr_id",
+          "section_id",
+          "from_adr",
+          "from_section",
+          "adr_evidence",
+          "section_evidence"
+        ],
+        "properties": {
+          "adr_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "section_id": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 12
+          },
+          "from_adr": {
+            "type": "boolean"
+          },
+          "from_section": {
+            "type": "boolean"
+          },
+          "adr_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "file",
+                "line",
+                "end_line",
+                "section",
+                "sha256"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "section": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          },
+          "section_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "file",
+                "line",
+                "end_line",
+                "section",
+                "sha256"
+              ],
+              "properties": {
+                "file": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "end_line": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "section": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "sha256": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reason",
+        "commits_analyzed",
+        "window_oldest_commit",
+        "window_newest_commit",
+        "hotspots",
+        "temporal_couplings"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "available",
+            "disabled",
+            "shallow",
+            "insufficient_history",
+            "unavailable",
+            "truncated"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "commits_analyzed": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "window_oldest_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$"
+        },
+        "window_newest_commit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$"
+        },
+        "hotspots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "file",
+              "section_ids",
+              "changes",
+              "commit_frequency",
+              "last_change",
+              "associated_files",
+              "last_associated_change",
+              "staleness_days",
+              "aligned",
+              "alignment_evidence"
+            ],
+            "properties": {
+              "file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "section_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 12
+                },
+                "uniqueItems": true
+              },
+              "changes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "commit_frequency": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "last_change": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$"
+              },
+              "associated_files": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "last_associated_change": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "pattern": "^[a-f0-9]{40}(?:[a-f0-9]{24})?$"
+              },
+              "staleness_days": {
+                "type": [
+                  "number",
+                  "null"
+                ],
+                "minimum": 0
+              },
+              "aligned": {
+                "type": "boolean"
+              },
+              "alignment_evidence": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "temporal_couplings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_file",
+              "target_file",
+              "source_changes",
+              "target_changes",
+              "cochanges",
+              "directed_ratio",
+              "jaccard",
+              "association_declared"
+            ],
+            "properties": {
+              "source_file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "target_file": {
+                "type": "string",
+                "minLength": 1
+              },
+              "source_changes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "target_changes": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "cochanges": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "directed_ratio": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "jaccard": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "association_declared": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "source_inventory": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "file",
+          "sha256",
+          "bytes",
+          "format"
+        ],
+        "properties": {
+          "file": {
+            "type": "string",
+            "minLength": 1
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "format": {
+            "enum": [
+              "markdown",
+              "asciidoc",
+              "mermaid",
+              "plantuml",
+              "structurizr",
+              "drawio",
+              "png",
+              "jpg",
+              "jpeg",
+              "svg",
+              "other"
+            ]
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "dimension",
+          "severity",
+          "file",
+          "section",
+          "rule_id",
+          "message",
+          "evidence",
+          "remediation",
+          "related_claim_ids",
+          "metric_refs"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{16}$"
+          },
+          "dimension": {
+            "enum": [
+              "structure",
+              "decisions",
+              "volatility",
+              "drift"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "file": {
+            "type": "string"
+          },
+          "section": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "minimum": 1,
+            "maximum": 12
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence": {
+            "type": "string",
+            "minLength": 1
+          },
+          "remediation": {
+            "type": "string",
+            "minLength": 1
+          },
+          "related_claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "metric_refs": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "diagnostics": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "level",
+          "message",
+          "remediation"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1
+          },
+          "level": {
+            "enum": [
+              "info",
+              "warning"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "remediation": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "quality_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "min_tqi",
+        "fail_on_severity",
+        "score_passed",
+        "severity_passed",
+        "passed",
+        "blocking_finding_ids"
+      ],
+      "properties": {
+        "min_tqi": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "fail_on_severity": {
+          "enum": [
+            "none",
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "score_passed": {
+          "type": "boolean"
+        },
+        "severity_passed": {
+          "type": "boolean"
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "blocking_finding_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "semantic_enrichment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "affects_score",
+        "provider",
+        "model",
+        "observations",
+        "reason"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "disabled",
+            "complete",
+            "unavailable",
+            "skipped"
+          ]
+        },
+        "affects_score": {
+          "const": false
+        },
+        "provider": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "claim_ids",
+              "source_refs",
+              "message",
+              "kind"
+            ],
+            "properties": {
+              "claim_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "source_refs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "file",
+                    "line",
+                    "end_line",
+                    "section",
+                    "sha256"
+                  ],
+                  "properties": {
+                    "file": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "line": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "end_line": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "section": {
+                      "type": [
+                        "integer",
+                        "null"
+                      ],
+                      "minimum": 1,
+                      "maximum": 12
+                    },
+                    "sha256": {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    }
+                  }
+                }
+              },
+              "message": {
+                "type": "string",
+                "minLength": 1
+              },
+              "kind": {
+                "enum": [
+                  "contradiction",
+                  "ambiguity",
+                  "claim_refinement",
+                  "other"
+                ]
+              }
+            }
+          }
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "prompt_manifest": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "target",
+          "path",
+          "embedded_claim_ids",
+          "omitted_ranges",
+          "report_pointers",
+          "embedded_chars"
+        ],
+        "properties": {
+          "target": {
+            "enum": [
+              "code",
+              "cloud",
+              "diagrams"
+            ]
+          },
+          "path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "embedded_claim_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "omitted_ranges": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "artifact",
+                "json_pointer",
+                "start_index",
+                "end_index_exclusive"
+              ],
+              "properties": {
+                "artifact": {
+                  "const": "claims.json"
+                },
+                "json_pointer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "start_index": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "end_index_exclusive": {
+                  "type": "integer",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "report_pointers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "embedded_chars": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      },
+      "minItems": 3,
+      "maxItems": 3
+    }
+  }
+}

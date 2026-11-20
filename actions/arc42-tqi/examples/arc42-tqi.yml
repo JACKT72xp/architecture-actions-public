@@ -1,0 +1,18 @@
+version: 1
+weights:
+  structure: 20
+  decisions: 30
+  volatility: 25
+  drift: 25
+metrics:
+  structure:
+    depth: 35
+    coverage: 20
+min_section_words: 60
+critical_sections: [5, 6, 7, 9, 10, 11]
+min_tqi: 70
+fail_on_severity: high
+history:
+  enabled: true
+  max_commits: 100
+  hotspot_changes: 5

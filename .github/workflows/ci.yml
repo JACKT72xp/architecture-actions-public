@@ -1,0 +1,70 @@
+name: arc42 TQI CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: actions/arc42-tqi
+    strategy:
+      matrix:
+        python: ['3.12']
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install -e '.[test]'
+      - run: python -m pytest -q
+      - run: python -m ruff check src tests scripts
+      - run: python -m mypy src
+      - run: python -m pip wheel --no-deps . --wheel-dir dist
+  action-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          fetch-depth: 0
+      - uses: ./actions/arc42-tqi
+        id: tqi
+        with:
+          docs-path: actions/arc42-tqi/tests/fixtures/mature/docs
+          adr-path: actions/arc42-tqi/tests/fixtures/mature/docs/adr
+          min-tqi: '90'
+          fail-on-severity: high
+      - name: Assert final Action outputs and artifacts
+        env:
+          MATURITY: ${{ steps.tqi.outputs.maturity-level }}
+          REPORT: ${{ steps.tqi.outputs.report-path }}
+          CLAIMS: ${{ steps.tqi.outputs.claims-path }}
+          PROMPTS: ${{ steps.tqi.outputs.drift-prompts-dir }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          output = Path(".arc42-tqi")
+          assert os.environ["MATURITY"] == "L4"
+          report = json.loads(Path(os.environ["REPORT"]).read_text())
+          assert Path(os.environ["CLAIMS"]).is_file()
+          assert len(list(Path(os.environ["PROMPTS"]).glob("*.md"))) == 3
+          assert report["semantic_enrichment"]["status"] == "disabled"
+          assert len(report["prompt_manifest"]) == 3
+          for entry in report["prompt_manifest"]:
+              assert Path(entry["path"]).is_file()
+          assert report["maturity_level"] == "L4"
+          assert report["tqi_score"] == 100
+          assert report["quality_gate"]["passed"]
+          assert not report["findings"]
+          assert (output / "claims.json").is_file()
+          assert (output / "claims.yaml").is_file()
+          PY
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: architecture-evidence
+          path: .arc42-tqi/
+          include-hidden-files: true

@@ -1,0 +1,561 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "arc42-tqi repository configuration overrides, Phase 1",
+  "description": "Deep-merge with defaults before cross-field validation. Every weight group must have a positive sum; at least one claim category must remain required; source and output paths must not overlap destructively.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [],
+  "properties": {
+    "version": {
+      "const": 1
+    },
+    "weights": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "structure": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "decisions": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "volatility": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "drift": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        }
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "structure": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "depth": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "placeholders": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "references": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "headings": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "diagrams": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          }
+        },
+        "decisions": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "completeness": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "lifecycle": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "tradeoffs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "quality_attributes": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "bidirectional_traceability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          }
+        },
+        "volatility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "classification": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "encapsulation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "impact_mitigation": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "evolution": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          }
+        },
+        "drift": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "coverage": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "completeness": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "provenance": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "atomic_verifiability": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "integrity": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1000000
+            }
+          }
+        }
+      }
+    },
+    "critical_sections": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 12
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "min_section_words": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 10000
+    },
+    "min_tqi": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "fail_on_severity": {
+      "enum": [
+        "none",
+        "critical",
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "components": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "dependencies": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "flows": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "cloud_resources": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "volatility_zones": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "constraints_and_adrs": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "required": {
+              "type": "boolean"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "required"
+                ],
+                "properties": {
+                  "required": {
+                    "const": false
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "reason"
+                ],
+                "properties": {
+                  "reason": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "history": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "max_commits": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10000
+        },
+        "hotspot_changes": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10000
+        },
+        "coupling_min_support": {
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 10000
+        },
+        "coupling_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "stale_after_days": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 36500
+        },
+        "timeout_seconds": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60
+        }
+      }
+    },
+    "prompts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "max_claims_per_prompt": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "max_embedded_chars": {
+          "type": "integer",
+          "minimum": 4096,
+          "maximum": 1000000
+        },
+        "max_findings_per_prompt": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [],
+      "properties": {
+        "max_files": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "max_file_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "max_total_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "max_expanded_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "max_include_depth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "max_claims": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        },
+        "max_git_output_bytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1073741824
+        }
+      }
+    }
+  }
+}

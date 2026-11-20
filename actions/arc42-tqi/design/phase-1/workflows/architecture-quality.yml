@@ -1,0 +1,49 @@
+name: Architecture Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: architecture-quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  architecture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out architecture and complete Git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Assess architecture quality
+        id: tqi
+        uses: ./
+        with:
+          docs-path: docs
+          adr-path: docs/adr
+          config-path: .arc42-tqi.yml
+          output-dir: .arc42-tqi
+          min-tqi: '70'
+          fail-on-severity: high
+          comment-pr: ${{ github.event_name == 'pull_request' }}
+          github-token: ${{ github.token }}
+
+      - name: Preserve architecture evidence even when a quality gate fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arc42-tqi-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .arc42-tqi/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 30

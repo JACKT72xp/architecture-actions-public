@@ -1,0 +1,11 @@
+**
+!Dockerfile
+!pyproject.toml
+!requirements-build.txt
+!requirements-runtime.txt
+!README.md
+!LICENSE
+!src/
+!src/arc42_tqi/
+!src/arc42_tqi/*.py
+!src/arc42_tqi/*.yml

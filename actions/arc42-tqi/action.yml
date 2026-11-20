@@ -1,0 +1,93 @@
+name: arc42 TQI and Architecture Drift Readiness
+description: Deterministic arc42 quality scoring, ADR traceability, Git evolution signals, and modular architecture audit prompts.
+author: arc42-tqi-action maintainers
+branding:
+  icon: compass
+  color: blue
+
+inputs:
+  docs-path:
+    description: Repository-relative arc42 entry document or documentation directory.
+    required: false
+    default: docs
+  adr-path:
+    description: Repository-relative ADR directory or document.
+    required: false
+    default: docs/adr
+  diagrams-path:
+    description: Optional repository-relative directory of diagram sources or images.
+    required: false
+    default: ''
+  config-path:
+    description: Optional repository-relative configuration; empty auto-discovers .arc42-tqi.yml.
+    required: false
+    default: ''
+  output-dir:
+    description: Repository-relative artifact directory, separate from source inputs.
+    required: false
+    default: .arc42-tqi
+  min-tqi:
+    description: Override the configured minimum TQI with a number from 0 to 100; empty uses configuration.
+    required: false
+    default: ''
+  fail-on-severity:
+    description: Override the configured severity gate with none, critical, high, medium, or low; empty uses configuration.
+    required: false
+    default: ''
+  llm-provider:
+    description: Optional provider-neutral semantic adapter; none or http-json. Semantic output cannot change scores or gates.
+    required: false
+    default: none
+  llm-model:
+    description: Model identifier required by the optional semantic adapter.
+    required: false
+    default: ''
+  llm-api-key:
+    description: Optional secret value for the explicitly configured semantic endpoint; never passed as a command-line argument.
+    required: false
+    default: ''
+  llm-endpoint:
+    description: Explicit HTTPS endpoint implementing the provider-neutral JSON semantic adapter contract.
+    required: false
+    default: ''
+  comment-pr:
+    description: Publish or update the PR summary when true; forbidden API requests fall back to the Step Summary.
+    required: false
+    default: 'false'
+  github-token:
+    description: GitHub token for optional PR comments; read-only tokens are handled without failing the analysis.
+    required: false
+    default: ${{ github.token }}
+
+outputs:
+  tqi-score:
+    description: Deterministic TQI from 0 to 100, rounded half-up to two decimal places.
+  maturity-level:
+    description: Documentation maturity level L1, L2, L3, or L4; not an implementation-conformance certification.
+  report-path:
+    description: Repository-relative path to tqi-report.json.
+  claims-path:
+    description: Repository-relative path to claims.yaml; equivalent claims.json is also generated.
+  drift-prompts-dir:
+    description: Repository-relative directory containing the three modular drift audit prompts.
+  findings-count:
+    description: Number of deterministic findings, excluding optional semantic observations.
+
+runs:
+  using: docker
+  image: Dockerfile
+  entrypoint: /usr/local/bin/arc42-tqi
+  env:
+    ARC42_TQI_DOCS_PATH: ${{ inputs.docs-path }}
+    ARC42_TQI_ADR_PATH: ${{ inputs.adr-path }}
+    ARC42_TQI_DIAGRAMS_PATH: ${{ inputs.diagrams-path }}
+    ARC42_TQI_CONFIG_PATH: ${{ inputs.config-path }}
+    ARC42_TQI_OUTPUT_DIR: ${{ inputs.output-dir }}
+    ARC42_TQI_MIN_TQI: ${{ inputs.min-tqi }}
+    ARC42_TQI_FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+    ARC42_TQI_LLM_PROVIDER: ${{ inputs.llm-provider }}
+    ARC42_TQI_LLM_MODEL: ${{ inputs.llm-model }}
+    ARC42_TQI_LLM_API_KEY: ${{ inputs.llm-api-key }}
+    ARC42_TQI_LLM_ENDPOINT: ${{ inputs.llm-endpoint }}
+    ARC42_TQI_COMMENT_PR: ${{ inputs.comment-pr }}
+    ARC42_TQI_GITHUB_TOKEN: ${{ inputs.github-token }}

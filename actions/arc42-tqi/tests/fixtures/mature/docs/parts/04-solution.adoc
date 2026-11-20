@@ -1,0 +1,6 @@
+== 4. Solution Strategy
+
+Decouple order acceptance from fulfillment using durable asynchronous messaging.
+Hide warehouse protocol choices behind an outbound port and keep validation rules
+inside a separately versioned policy. This strategy prioritizes availability and
+recoverability, accepting eventual fulfillment and additional operational work.
