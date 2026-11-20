@@ -156,12 +156,17 @@ visible. Reports of confusing results are useful contributions too.
 Source publication and a versioned release are separate steps. No version tag,
 public image or Marketplace listing is implied by this README.
 
-The **Release arc42 TQI Action** workflow accepts a package version such as
-`v0.1.0`, publishes a multi-platform image under
-`ghcr.io/OWNER/REPOSITORY-arc42-tqi`, verifies the public image, and creates the
-scoped tag `arc42-tqi/v0.1.0` with a digest-pinned Action manifest. The GHCR package
-must be public for the unauthenticated pull check to pass. The workflow leaves the
-source branch unchanged. Follow the [release checklist](actions/arc42-tqi/docs/releasing.md)
-before dispatching it. Future Actions will use their own tag and image names.
+All contributions, including release infrastructure, are reviewed through PRs in
+this repository. Analyzer sources live in `actions/arc42-tqi/`; canonical
+Marketplace infrastructure lives in `distribution/arc42-tqi/`.
+
+After a release PR updates `pyproject.toml` and `CHANGELOG.md` and passes CI, its
+merged commit is exported to [arc42-tqi-action](https://github.com/JACKT72xp/arc42-tqi-action).
+The distribution creates version tags such as `v0.1.0` and draft Marketplace
+releases after its own checks pass. The previous monorepo GHCR release workflow
+is retired. No Marketplace listing is implied until the owner publishes it.
+
+Follow the [distribution guide](distribution/arc42-tqi/DISTRIBUTION.md) for
+synchronization, versioning, required PR checks, and Marketplace publication.
 
 Apache-2.0 licensed. Built to be understood, adapted, and improved together.

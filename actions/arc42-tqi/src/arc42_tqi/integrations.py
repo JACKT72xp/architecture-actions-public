@@ -11,6 +11,7 @@ from urllib.parse import urlsplit
 
 from pydantic import ValidationError
 
+from . import __version__
 from .claims import CATEGORIES
 from .config import InputError
 from .contracts import SemanticObservation
@@ -26,7 +27,7 @@ def request_json(url: str, token: str, payload: dict[str, Any] | None = None, me
     parsed = urlsplit(url)
     if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.fragment:
         raise InputError("Integration endpoints require HTTPS without embedded credentials or fragments")
-    headers = {"Accept": "application/json", "User-Agent": "arc42-tqi-action/0.1.0"}
+    headers = {"Accept": "application/json", "User-Agent": f"arc42-tqi-action/{__version__}"}
     if token:
         headers["Authorization"] = f"Bearer {token}"
     data = json_text(payload).encode() if payload is not None else None

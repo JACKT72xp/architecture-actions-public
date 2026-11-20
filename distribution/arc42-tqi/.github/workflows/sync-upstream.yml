@@ -1,0 +1,67 @@
+name: Sync reviewed upstream source
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Full reviewed commit SHA on architecture-actions-public main
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+jobs:
+  sync:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+      pull-requests: write
+    env:
+      SOURCE_SHA: ${{ inputs.source_sha }}
+      GH_TOKEN: ${{ secrets.DISTRIBUTION_SYNC_TOKEN || github.token }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          token: ${{ secrets.DISTRIBUTION_SYNC_TOKEN || github.token }}
+      - name: Export selected upstream commit
+        run: |
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]] || exit 1
+          git clone --no-checkout https://github.com/JACKT72xp/architecture-actions-public.git "$RUNNER_TEMP/upstream"
+          git -C "$RUNNER_TEMP/upstream" merge-base --is-ancestor "$SOURCE_SHA" origin/main
+          git -C "$RUNNER_TEMP/upstream" show "$SOURCE_SHA:distribution/arc42-tqi/.github/scripts/sync_upstream.py" > "$RUNNER_TEMP/export.py"
+          python "$RUNNER_TEMP/export.py" --source "$RUNNER_TEMP/upstream" --ref "$SOURCE_SHA" --destination "$GITHUB_WORKSPACE"
+          python .github/scripts/sync_upstream.py --source "$RUNNER_TEMP/upstream" --check
+      - name: Check workflow-update credentials
+        env:
+          HAS_SYNC_TOKEN: ${{ secrets.DISTRIBUTION_SYNC_TOKEN != '' }}
+        run: |
+          if test "$HAS_SYNC_TOKEN" != true && ! git diff --quiet -- .github/workflows; then
+            echo 'Workflow updates require DISTRIBUTION_SYNC_TOKEN with Workflows write permission.'
+            echo 'Alternatively, export locally and push a sync branch using your maintainer credentials. See DISTRIBUTION.md.'
+            exit 1
+          fi
+      - name: Open synchronization pull request
+        run: |
+          if test -z "$(git status --porcelain)"; then
+            echo 'Already synchronized.'
+            exit 0
+          fi
+          branch="sync/upstream-$SOURCE_SHA"
+          git switch -c "$branch"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add --all
+          git commit -m "Sync arc42 TQI from upstream $SOURCE_SHA"
+          git push origin "$branch"
+          cat > "$RUNNER_TEMP/pr-body.md" <<EOF
+          Import the arc42-tqi subtree from https://github.com/JACKT72xp/architecture-actions-public/commit/$SOURCE_SHA.
+
+          UPSTREAM.json records the source commit and exported file hashes.
+          Run the Validate distribution workflow on this branch before merging:
+          pushes and pull requests created with GITHUB_TOKEN do not trigger normal CI events.
+          EOF
+          gh pr create --head "$branch" --title "Sync upstream $SOURCE_SHA" --body-file "$RUNNER_TEMP/pr-body.md"
+          gh workflow run ci.yml --ref "$branch"

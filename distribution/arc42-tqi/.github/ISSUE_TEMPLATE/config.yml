@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report an analyzer issue or request a feature
+    url: https://github.com/JACKT72xp/architecture-actions-public/issues
+    about: Development and issue tracking are centralized in the upstream repository.
+  - name: Report a security vulnerability privately
+    url: https://github.com/JACKT72xp/architecture-actions-public/security
+    about: Follow the upstream security policy; do not disclose vulnerabilities in public issues.
