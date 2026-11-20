@@ -45,6 +45,9 @@ def main() -> None:
             destination = target / ".arc42-tqi"
             report = json.loads((destination / "tqi-report.json").read_text())
             jsonschema.Draft202012Validator(schema, registry=registry).validate(report)
+            assert "Architecture quality report" in (destination / "human-report.md").read_text()
+            assert "<!doctype html>" in (destination / "human-report.html").read_text()
+            assert "human-report-html-path=.arc42-tqi/human-report.html" in (target / "github-output").read_text()
             claims = json.loads((destination / "claims.json").read_text())
             assert yaml.safe_load((destination / "claims.yaml").read_text()) == claims
             assert report["semantic_enrichment"]["status"] == "disabled"

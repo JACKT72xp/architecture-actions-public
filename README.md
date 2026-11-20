@@ -76,7 +76,7 @@ on useful standards with your team. When ready, add `min-tqi: '70'` and/or
 returning exit code 1. Configuration or execution errors return exit code 2.
 
 Artifacts include `tqi-report.json`, equivalent `claims.json`/`claims.yaml`,
-`summary.md`, and three bounded prompts for code, cloud and diagram audits.
+`summary.md`, detailed `human-report.md`/`human-report.html`, and three bounded prompts for code, cloud and diagram audits.
 Supply the referenced JSON artifacts with prompts when evidence is omitted by
 budget. The prompts request an audit; they do not run one automatically.
 

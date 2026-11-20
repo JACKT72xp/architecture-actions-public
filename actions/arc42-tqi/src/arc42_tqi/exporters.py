@@ -12,6 +12,7 @@ import yaml
 
 from .claims import CATEGORIES
 from .config import InputError, safe_path
+from .human_report import human_html, human_report
 
 AUDITS = {
     "code": "Inspect module/package boundaries, imports, build dependency graphs, public interfaces, coupling, and synchronous/asynchronous call sites. Resolve repository identities and commit SHAs before comparing. Check both forbidden and permitted dependencies; absent evidence is not proof of absence.",
@@ -44,7 +45,7 @@ def summary(report: dict[str, Any], output: str) -> str:
         lines.append(f"- **{item['severity']} · {escaped(item['rule_id'])}** — {escaped(item['message'])} ({escaped(item['file'] or 'repository')}). {escaped(item['remediation'])}")
     if not report["findings"]:
         lines.append("No deterministic findings.")
-    lines.extend(["", "L4 measures documentation readiness; it does not certify implementation conformance.", ""])
+    lines.extend(["", "Download the workflow artifact and open **human-report.html** in a browser or **human-report.md** for the full explanation, risks, and remediation plan.", "", "L4 measures documentation readiness; it does not certify implementation conformance.", ""])
     return "\n".join(lines)
 
 
@@ -167,7 +168,9 @@ def write_artifacts(root: Path, output: Path, report: dict[str, Any], claims: di
     output = safe_path(root, output)
     output.mkdir(parents=True, exist_ok=True)
     prompts = build_prompts(report, claims, output.relative_to(root).as_posix())
-    artifacts = {"tqi-report.json": json_text(report), "claims.json": json_text(claims),
+    narrative = human_report(report, claims)
+    artifacts = {"human-report.md": narrative, "human-report.html": human_html(narrative),
+                 "tqi-report.json": json_text(report), "claims.json": json_text(claims),
                  "claims.yaml": yaml.safe_dump(claims, sort_keys=True, allow_unicode=True),
                  "summary.md": summary(report, output.relative_to(root).as_posix())}
     for kind in AUDITS:
@@ -189,6 +192,8 @@ def write_artifacts(root: Path, output: Path, report: dict[str, Any], claims: di
                 temporary.unlink()
     return {"tqi-score": str(report["tqi_score"]), "maturity-level": report["maturity_level"],
             "report-path": (output / "tqi-report.json").relative_to(root).as_posix(),
+            "human-report-path": (output / "human-report.md").relative_to(root).as_posix(),
+            "human-report-html-path": (output / "human-report.html").relative_to(root).as_posix(),
             "claims-path": (output / "claims.yaml").relative_to(root).as_posix(),
             "drift-prompts-dir": (output / "drift-prompts").relative_to(root).as_posix(),
             "findings-count": str(len(report["findings"]))}

@@ -66,6 +66,10 @@ outputs:
     description: Documentation maturity level L1, L2, L3, or L4; not an implementation-conformance certification.
   report-path:
     description: Repository-relative path to tqi-report.json.
+  human-report-path:
+    description: Repository-relative path to the detailed human-readable Markdown report.
+  human-report-html-path:
+    description: Repository-relative path to the offline, printable HTML report.
   claims-path:
     description: Repository-relative path to claims.yaml; equivalent claims.json is also generated.
   drift-prompts-dir:

@@ -69,6 +69,30 @@ Artifacts and step outputs are written **before** a quality gate fails. A missin
 docs/ADR directory produces actionable findings rather than a traceback. An invalid
 configuration, unsafe input/output path, or write failure exits with status 2.
 
+## Start with the human report
+
+Download the workflow artifact and open **human-report.html** in a browser. It is
+self-contained, works offline, requires no LLM, and can be printed. The equivalent
+**human-report.md** is suitable for GitHub and Markdown viewers. Both are generated
+even when a quality gate fails, alongside the existing machine-readable evidence.
+
+The report explains the score's weighted contributions, why the gate passed or
+failed, priority documentation risks and next steps, all 12 sections, structured
+evidence coverage, every metric, and every finding with its source and remediation.
+It distinguishes parser recognition gaps from verified architecture defects and
+labels optional semantic observations separately. It does not rescore the analysis
+or certify implementation conformance. `summary.md` remains a compact CI overview.
+
+To add human reports to an older downloaded bundle, install this checkout with
+`python -m pip install -e .`, then run:
+
+```sh
+PYTHONPATH=src python scripts/render_human_report.py --artifacts /path/to/downloaded-artifact
+```
+
+This reads matching `tqi-report.json` and `claims.json` snapshots and adds only the
+two human-report files. It does not modify the saved JSON, claims, or audit prompts.
+
 ## Inputs and outputs
 
 | Input | Default | Behavior |
@@ -87,7 +111,8 @@ configuration, unsafe input/output path, or write failure exits with status 2.
 | `comment-pr` | `false` | Upsert same-repository PR bot comment |
 | `github-token` | `${{ github.token }}` | Used only when comments are enabled |
 
-Outputs: `tqi-score`, `maturity-level`, `report-path`, `claims-path`,
+Outputs: `tqi-score`, `maturity-level`, `report-path`, `human-report-path`,
+`human-report-html-path`, `claims-path`,
 `drift-prompts-dir`, and `findings-count`. Artifact paths are checkout-relative.
 `fail-on-severity: high` blocks critical **and** high findings. Defaults collect
 evidence without blocking. CLI flags mirror non-secret inputs (`--comment-pr` enables comments). Secret
@@ -160,6 +185,8 @@ tqi-report.json
 claims.yaml
 claims.json
 summary.md
+human-report.md
+human-report.html
 drift-prompts/
   drift-against-code.md
   drift-against-cloud.md
