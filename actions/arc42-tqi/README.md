@@ -1,6 +1,6 @@
 # arc42-tqi-action
 
-> **Phase 3 implemented — source available, no versioned release yet.** The CLI writes the final report,
+> **Beta implementation.** The CLI writes the final report,
 > claims, bounded audit prompts, and GitHub reporting. Optional semantic enrichment
 > stays separate from scoring. See [Phase 3 validation](docs/phase-3.md).
 
@@ -47,7 +47,7 @@ jobs:
   architecture:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           fetch-depth: 0
       - uses: JACKT72xp/architecture-actions-public/actions/arc42-tqi@COMMIT_SHA
@@ -57,7 +57,7 @@ jobs:
           adr-path: docs/adr
           min-tqi: '70'
           fail-on-severity: high
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: architecture-evidence
@@ -225,7 +225,8 @@ python -m venv .venv
 The target runtime is Python 3.12. Tests cover final schemas, prompt bounds,
 reproducibility, integration failures and GitHub reporting; CI checks Action outputs. See [CONTRIBUTING](CONTRIBUTING.md),
 [architecture decisions](docs/architecture.md), and [release checklist](docs/releasing.md).
-Apache-2.0 licensed. The Action has not been registered in GitHub Marketplace.
+Apache-2.0 licensed. See the [distribution releases](https://github.com/JACKT72xp/arc42-tqi-action/releases)
+for published versions and the Marketplace publication status.
 
 
 ## Repository layout

@@ -42,7 +42,7 @@ jobs:
   architecture:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           fetch-depth: 0
       - uses: JACKT72xp/architecture-actions-public/actions/arc42-tqi@COMMIT_SHA
@@ -50,7 +50,7 @@ jobs:
         with:
           docs-path: docs
           adr-path: docs/adr
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         if: always()
         with:
           name: architecture-evidence
@@ -124,7 +124,7 @@ You can also copy the complete `actions/arc42-tqi/` directory into your reposito
 preserving its license. Check out your project before using the local Action:
 
 ```yaml
-- uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+- uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
 - uses: ./actions/arc42-tqi
   with:
     docs-path: docs

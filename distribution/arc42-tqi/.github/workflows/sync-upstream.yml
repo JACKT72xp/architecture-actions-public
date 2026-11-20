@@ -17,7 +17,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
       pull-requests: write
     env:
       SOURCE_SHA: ${{ inputs.source_sha }}
@@ -60,8 +59,8 @@ jobs:
           Import the arc42-tqi subtree from https://github.com/JACKT72xp/architecture-actions-public/commit/$SOURCE_SHA.
 
           UPSTREAM.json records the source commit and exported file hashes.
-          Run the Validate distribution workflow on this branch before merging:
-          pushes and pull requests created with GITHUB_TOKEN do not trigger normal CI events.
+          Review the exported source and select Approve workflows to run on this PR.
+          GitHub requires approval for pull-request workflows created with GITHUB_TOKEN.
+          Merge only after the required PR checks pass.
           EOF
           gh pr create --head "$branch" --title "Sync upstream $SOURCE_SHA" --body-file "$RUNNER_TEMP/pr-body.md"
-          gh workflow run ci.yml --ref "$branch"

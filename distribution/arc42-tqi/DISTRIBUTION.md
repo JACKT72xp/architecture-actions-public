@@ -52,16 +52,20 @@ when consumers run the Action.
 
 Run **Sync reviewed upstream source** on the distribution's default branch with
 a full source SHA. It verifies membership in upstream `main`, uses that commit's
-canonical exporter, opens a sync PR, and dispatches distribution CI on its branch.
-Review the generated diff and passing CI before merging. Nothing auto-merges.
+canonical exporter and opens a sync PR. Review its generated diff, approve the
+PR workflows when prompted, and wait for required CI before merging. Nothing auto-merges.
 
 Normal code-only syncs use `GITHUB_TOKEN`. Enable Actions PR creation in this
-repository's Actions settings. Since workflow-token PRs do not automatically
-trigger push/PR CI, the workflow explicitly dispatches validation.
+repository's Actions settings. GitHub creates approval-required runs for PRs
+opened with `GITHUB_TOKEN`. After reviewing the recorded upstream commit and diff,
+a maintainer selects **Approve workflows to run** on the PR. This is workflow
+execution approval, separate from the optional independent code-review approval.
+Manually dispatched CI does not replace these required PR checks.
+See [GitHub's token-trigger rules](https://docs.github.com/en/actions/concepts/security/github_token).
 
 If the export changes `.github/workflows/`, use a fine-grained token stored as
 `DISTRIBUTION_SYNC_TOKEN`, scoped only to this distribution repository with Contents,
-Pull requests, Actions and Workflows write permissions, or synchronize locally
+Pull requests and Workflows write permissions, or synchronize locally
 using your existing maintainer credentials. No new token is needed for local
 synchronization. Keep the token out of source control. The workflow fails with
 instructions when workflow updates need credentials; it never silently omits them.
