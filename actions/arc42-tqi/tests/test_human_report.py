@@ -128,3 +128,18 @@ def test_saved_bundle_renderer_preserves_evidence(mature: Path, monkeypatch: Any
     with pytest.raises(SystemExit):
         renderer.main()
     assert not (tmp_path / "invalid").exists()
+
+
+def test_all_na_dimension_is_a_coverage_limit_not_a_measured_failure(mature: Path) -> None:
+    report, claims = sample(mature)
+    report["tqi_score"] = 75.0
+    report["maturity_level"] = "L3"
+    dimension = report["dimensions"]["volatility"]
+    dimension.update(score=0, weighted_contribution=0)
+    for metric in dimension["metrics"].values():
+        metric.update(applicable=0, satisfied=0, ratio=None, normalized_weight=None,
+                      weighted_penalty=None, reason="Explicitly inapplicable", status="not_applicable")
+    markdown = human_report(report, claims)
+    assert "assessment coverage limitation" in markdown
+    assert "not evidence of failing measured controls" in markdown
+    assert "Without explicit change axes" not in markdown

@@ -148,8 +148,19 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                   if report["dimensions"][name]["score"] < 100
                   or any(item["dimension"] == name for item in report["findings"])]
     for index, name in enumerate(actionable, 1):
-        lines.extend([f"### {index}. {LABELS[name]}", "", "**Observed evidence:** " + text(observation(report, claims, name)), "",
-                      "**Review risk:** " + RISKS[name], "", "**Next step:** " + ACTIONS[name], "",
+        measurable = any(item["normalized_weight"] for item in report["dimensions"][name]["metrics"].values())
+        observed = observation(report, claims, name) if measurable else (
+            "No positive-weight applicable metrics were measured. The rubric records zero for this dimension."
+        )
+        risk = RISKS[name] if measurable else (
+            "This is an assessment coverage limitation, not evidence of failing measured controls."
+        )
+        action = ACTIONS[name] if measurable else (
+            "Review applicability reasons, available evidence, and dimension weights before interpreting the zero. "
+            "Do not invent evidence for genuinely inapplicable checks."
+        )
+        lines.extend([f"### {index}. {LABELS[name]}", "", "**Observed evidence:** " + text(observed), "",
+                      "**Review risk:** " + risk, "", "**Next step:** " + action, "",
                       f"Evidence: tqi-report.json → dimensions.{name}; findings filtered by dimension {name}. "
                       "The complete findings below identify exact records and source locations.", ""])
     if not actionable:
@@ -219,7 +230,7 @@ def human_report(report: dict[str, Any], claims: dict[str, Any]) -> str:
                   f"report schema: {text(report['schema_version'])}. Source inventory: {len(report['source_inventory'])} entries.", "",
                   f"Git history: **{text(history['status'])}**, {history.get('commits_analyzed', 0)} commits analyzed. "
                   + (text(history["reason"]) + ". " if history.get("reason") else "")
-                  + "No detected evolution signals do not establish stability, especially with a short history window.", "",
+                  + "The absence of detected evolution signals does not establish stability, especially with a short history window.", "",
                   f"Implementation conformance status: **{text(report['conformance_status'])}**. "
                   "No production-risk assessment or code/cloud drift audit is performed by this score.", ""])
     for limitation in report["limitations"]:
