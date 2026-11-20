@@ -1,12 +1,21 @@
 # Changelog
 
-## Unreleased
+## 0.3.0
+
+Strategic architecture is the review baseline. Tactical compromises and transition
+plans are reviewed per ADR, not selected for the whole repository. Start with
+`human-summary.html`; use `human-report.html` for cited decision details.
+
+Before upgrading, remove `architecture-type` from workflows, `--architecture-type`
+from CLI arguments, and `review.architecture_type` from configuration. Remove
+obsolete purpose-specific evidence mappings as described in `docs/review-profiles.md`.
+Explicit ADR headings are supported; semantic RAG classification is not integrated.
 
 - Remove the global architecture-type selector. Review the solution strategy as the baseline and explicit tactical exceptions or transition plans per ADR.
 - Preserve mixed and historical decisions, source references, and unknown intent; do not infer classification from keyword mentions.
 - Add concise decision coverage to human summaries and per-ADR details to full reports.
 - Report schema 1.2 replaces the global purpose with a strategic baseline and decision assessments. Saved schemas 1.0/1.1 remain renderable.
-- Migration: remove architecture-type inputs and review.architecture_type configuration. Numeric scoring is unchanged, but required review findings and severity-gate outcomes can change. This requires a minor release, not a patch.
+- Migration: remove architecture-type inputs and review.architecture_type configuration. Numeric scoring is unchanged, but required review findings and severity-gate outcomes can change. This is an incompatible 0.x minor release.
 
 ## 0.2.2
 
