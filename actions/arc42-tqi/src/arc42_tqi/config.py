@@ -105,7 +105,6 @@ def validate(config: dict[str, Any]) -> None:
     review = config["review"]
     choices = {
         "profile": ("arc42", "extended"), "rigor": ("advisory", "standard", "strict"),
-        "architecture_type": ("strategic", "tactical", "transition"),
         "c4_level": ("context", "container", "component"), "deployment_view": ("required", "not-required"),
     }
     for key, allowed in choices.items():

@@ -42,10 +42,6 @@ inputs:
     description: 'Evidence review rigor: advisory, standard (default), or strict. Gate thresholds remain explicit.'
     required: false
     default: ''
-  architecture-type:
-    description: 'Review purpose: strategic, tactical (default), or transition.'
-    required: false
-    default: ''
   c4-level:
     description: 'Maximum required C4 depth: context, container, or component (default). Code-level diagrams are not required.'
     required: false
@@ -121,6 +117,5 @@ runs:
     ARC42_TQI_GITHUB_TOKEN: ${{ inputs.github-token }}
     ARC42_TQI_REVIEW_PROFILE: ${{ inputs.review-profile }}
     ARC42_TQI_REVIEW_RIGOR: ${{ inputs.review-rigor }}
-    ARC42_TQI_ARCHITECTURE_TYPE: ${{ inputs.architecture-type }}
     ARC42_TQI_C4_LEVEL: ${{ inputs.c4-level }}
     ARC42_TQI_DEPLOYMENT_VIEW: ${{ inputs.deployment-view }}

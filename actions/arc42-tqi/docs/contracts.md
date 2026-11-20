@@ -12,7 +12,7 @@ traceability edges, Git signals, source SHA-256 inventory, and tool/repository
 metadata. Git facts are null when unavailable. Paths are repository-relative;
 there is no wall-clock timestamp. Conformance remains `not_evaluated`.
 
-The final report validates against the unchanged Phase 1 report schema, including
+The final report uses schema 1.2 in `schemas/tqi-report.schema.json`, including
 `semantic_enrichment` and the three-entry `prompt_manifest`. The library entry point
 `analyze_repository` remains offline and returns the core report and claims; the CLI
 adds integration envelopes and artifacts. Git hotspot `last_change` and

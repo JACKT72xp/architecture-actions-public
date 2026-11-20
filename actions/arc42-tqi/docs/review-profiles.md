@@ -5,7 +5,7 @@ and typed decision evidence, with default weights 50/50. Volatility, Git mining,
 and audit-readiness checks do not affect its score or gate. Claims and separate
 audit prompts remain auxiliary exports. Existing four-dimension assessments can
 be reproduced with `review-profile: extended` (scoring version 1.0). The arc42
-profile records scoring version 2.0; generated reports use schema 1.1 (claims remain 1.0): do not compare scores across these profiles
+profile records scoring version 2.0; generated reports use schema 1.2 (claims remain 1.0): do not compare scores across these profiles
 as if the architecture had improved. Re-run the source repository; never relabel
 an old bundle's score.
 
@@ -19,7 +19,6 @@ an old bundle's score.
     config-path: .arc42-tqi.yml
     review-profile: arc42
     review-rigor: strict
-    architecture-type: transition
     c4-level: component
     deployment-view: required
     min-tqi: '70'
@@ -39,17 +38,93 @@ configurable using the existing configuration contract.
 | Setting | Values and effect |
 | --- | --- |
 | `review-rigor` | `advisory`: missing/invalid review references are low severity; `standard`: medium; `strict`: high |
-| `architecture-type` | `strategic`: direction and target state; `tactical`: bounded delivery scope; `transition`: current/target state, migration stages, rollback/recovery |
 | `c4-level` | `context`; `container` includes context; `component` includes context and containers. Code-level diagrams are never required. |
 | `deployment-view` | `required` adds a deployment evidence check; `not-required` explicitly removes that check |
 
-Defaults: arc42, standard, tactical, component, required. Rigor changes severity,
+Defaults: arc42, standard, component, required. The review baseline is strategic. Rigor changes severity,
 not TQI arithmetic or a claim of semantic understanding. With `min-tqi: 0` and
 `fail-on-severity: none`, even strict review remains non-blocking. A high score
 can coexist with unresolved review expectations: inspect both score and gate.
-The architecture-type definitions are project review policies, not official
-arc42 maturity categories. Type is declared by the operator, never inferred from
-a few keywords.
+The strategic baseline is a team review policy, not an official arc42 classification
+or a claim that the documentation proves strategic alignment. Section 4 must still
+explain the solution strategy. Tactical compromises and transition plans belong to
+individual decisions; an ADR can document both.
+
+## Migration from v0.2.x
+
+Remove `architecture-type` from Action inputs, `--architecture-type` from CLI
+arguments, and `review.architecture_type` from repository configuration. Remove
+any workflow-dispatch selector and its fallback. Move the old purpose-specific
+`review.evidence` mappings (`tactical_scope`, `current_state`, `target_state`,
+`migration_plan`, `rollback`) into the relevant ADR narrative; those configuration
+keys are no longer accepted. Keep `strategic_intent` for the section 4 evidence. The removed configuration key
+is rejected instead of silently changing its meaning. No workflow classification
+is needed in the new model. Existing published v0.2.x tags keep their old behavior.
+
+The numeric TQI formula remains scoring 2.0. The required review now checks
+strategic direction instead of a selected purpose checklist. ADR exception gaps
+use the configured rigor and can change severity-gate results. Re-run and review
+gates when upgrading. Report schema 1.2 adds `baseline` and `decision_assessments`;
+old saved reports remain renderable without rescoring.
+
+## Examine decisions against the strategy
+
+arc42 [section 4](https://docs.arc42.org/section-4/) explains the solution strategy;
+[section 9](https://docs.arc42.org/section-9/) records significant decisions,
+alternatives, rationale, status, and consequences; [section 11](https://docs.arc42.org/section-11/)
+records risks and technical debt. A justified compromise is not automatically a
+quality defect. Review its documented rationale and consequences instead.
+
+The offline checker recognizes explicit Markdown or AsciiDoc ADR headings below.
+Write normal prose under them; no YAML classification field is required. These
+are this tool's evidence conventions, not mandatory arc42 headings. Spanish
+headings are supported as shown. Other prose remains for human interpretation;
+absence of recognized headings does not prove absence of compromises.
+
+| Heading | Spanish equivalent | Purpose |
+| --- | --- | --- |
+| Strategic alignment | Alineación estratégica | Explain the relationship to the section 4 strategy, with a reference |
+| Tactical exception | Excepción táctica | Declare the compromise and explain the business or external constraint |
+| Review condition | Condición de revisión | State when or under what condition the compromise must be reconsidered |
+| Transition plan | Plan de transición | Explain the stages toward the intended solution |
+| Exit criteria | Criterios de salida | State what establishes completion of the intermediate state |
+| Rollback and recovery | Reversión y recuperación | Explain recovery if the transition fails, or justify why rollback is inapplicable |
+
+For a tactical exception, review alignment, exception rationale, consequences,
+and a review condition. For a transition plan, review alignment, the plan,
+consequences, exit criteria, and recovery. Consequences use the existing ADR
+contract. Missing or placeholder text raises an evidence finding; the presence
+of prose only establishes availability, never the soundness of its reasoning.
+The checker does not validate strategy links, deadlines, ownership, or feasibility.
+Review these manually, including any linked section 11 risks or debt.
+
+Accepted and proposed decisions are reviewed; decisions with unspecified lifecycle
+also remain review candidates. Deprecated and superseded decisions remain visible
+as historical evidence and create no new exception findings. Existing lifecycle
+validation still applies. An ADR without declarations is reported as intent not
+established, never automatically classified as strategic.
+
+```markdown
+## Strategic alignment
+The order service remains the target data owner; see section 4, Solution Strategy.
+
+## Tactical exception
+The supplier deadline requires a temporary shared-database adapter. The service
+API cannot be delivered by that date. The decision's alternatives and consequences
+explain the trade-off and its coupling risk (tracked in section 11).
+
+## Review condition
+The service owner reopens this decision when the supplier API becomes available.
+
+## Transition plan
+Introduce the API, migrate clients, and remove shared-database access.
+
+## Exit criteria
+All clients use the API and shared-database credentials have been revoked.
+
+## Rollback and recovery
+Restore the previous client routing if reconciliation detects missing orders.
+```
 
 ## Reference evidence instead of adding machine-only prose
 
@@ -63,7 +138,6 @@ version: 1
 review:
   profile: arc42
   rigor: standard
-  architecture_type: tactical
   c4_level: component
   deployment_view: required
   evidence:
@@ -75,12 +149,12 @@ review:
       - {file: docs/architecture.md, line: 75, end_line: 95}
     deployment:
       - {file: docs/architecture.md, line: 110, end_line: 130}
-    tactical_scope:
+    strategic_intent:
       - {file: docs/architecture.md, line: 38, end_line: 48}
 ```
 
-Additional evidence keys: `strategic_intent`, `current_state`, `target_state`,
-`migration_plan`, `rollback`. Each list supports up to 100 references; each range
+Supported evidence keys are `context`, `container`, `component`, `deployment`,
+and `strategic_intent`. Each list supports up to 100 references; each range
 supports at most 200 lines. Files must already be in the scanned text inventory;
 paths are repository-relative and line numbers are one-based. Reference a diagram's
 explanation or inline source in the scanned document. Arbitrary external files,
@@ -107,7 +181,7 @@ rejected references first. All excerpts, hashes, and references remain in the JS
 The RAG progress notes describe a complementary evidence system. This Action does
 not currently connect to that RAG, its graph, or its MCP tools. The existing
 optional semantic adapter remains advisory and cannot change scores or gates.
-Do not interpret configuring `architecture-type` as automatic RAG classification.
+Explicit ADR heading recognition is not semantic RAG classification.
 
 A future integration should preserve this boundary:
 

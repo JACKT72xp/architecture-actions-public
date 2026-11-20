@@ -31,7 +31,6 @@ def analyze(
     fail_on_severity: Annotated[str | None, typer.Option(envvar="ARC42_TQI_FAIL_ON_SEVERITY")] = None,
     review_profile: Annotated[str, typer.Option(envvar="ARC42_TQI_REVIEW_PROFILE")] = "",
     review_rigor: Annotated[str, typer.Option(envvar="ARC42_TQI_REVIEW_RIGOR")] = "",
-    architecture_type: Annotated[str, typer.Option(envvar="ARC42_TQI_ARCHITECTURE_TYPE")] = "",
     c4_level: Annotated[str, typer.Option(envvar="ARC42_TQI_C4_LEVEL")] = "",
     deployment_view: Annotated[str, typer.Option(envvar="ARC42_TQI_DEPLOYMENT_VIEW")] = "",
     llm_provider: Annotated[str, typer.Option(envvar="ARC42_TQI_LLM_PROVIDER")] = "none",
@@ -45,7 +44,7 @@ def analyze(
                                             output_dir, min_tqi, fail_on_severity,
                                             {key: value for key, value in {
                                                 "profile": review_profile, "rigor": review_rigor,
-                                                "architecture_type": architecture_type, "c4_level": c4_level,
+                                                "c4_level": c4_level,
                                                 "deployment_view": deployment_view,
                                             }.items() if value})
         report["semantic_enrichment"] = enrich(

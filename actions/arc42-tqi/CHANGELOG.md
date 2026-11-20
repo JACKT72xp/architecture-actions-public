@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Remove the global architecture-type selector. Review the solution strategy as the baseline and explicit tactical exceptions or transition plans per ADR.
+- Preserve mixed and historical decisions, source references, and unknown intent; do not infer classification from keyword mentions.
+- Add concise decision coverage to human summaries and per-ADR details to full reports.
+- Report schema 1.2 replaces the global purpose with a strategic baseline and decision assessments. Saved schemas 1.0/1.1 remain renderable.
+- Migration: remove architecture-type inputs and review.architecture_type configuration. Numeric scoring is unchanged, but required review findings and severity-gate outcomes can change. This requires a minor release, not a patch.
+
 ## 0.2.2
 
 - Shorten Action metadata to meet the GitHub Marketplace description limit.

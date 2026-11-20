@@ -96,7 +96,7 @@ def analyze_repository(root: Path, docs_path: str = "docs", adr_path: str = "doc
                         metric, applicable=metric.applicable + deficit,
                         description=metric.description + "; each rejected input document/block adds one deficit",
                     )
-    review, review_findings = assess_review(tree, config)
+    review, review_findings = assess_review(tree, config, adrs)
     scoped_findings = tree.findings + adr_findings + claim_findings + rule_findings
     if config["review"]["profile"] == "arc42":
         scoped_findings = [item for item in scoped_findings if item.dimension not in {"volatility", "drift"}]
@@ -123,7 +123,7 @@ def analyze_repository(root: Path, docs_path: str = "docs", adr_path: str = "doc
             pass
     claims.update(metadata=repo_metadata, applicability=config["applicability"])
     report: dict[str, Any] = {
-        "schema_version": "1.1", "scoring_version": "2.0" if config["review"]["profile"] == "arc42" else "1.0",
+        "schema_version": "1.2", "scoring_version": "2.0" if config["review"]["profile"] == "arc42" else "1.0",
         "architecture_review": review,
         "tool": {"name": "arc42-tqi-action", "version": __version__, "python_version": platform.python_version(),
                  "git_version": git_version},

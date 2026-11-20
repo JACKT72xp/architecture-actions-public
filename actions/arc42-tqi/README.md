@@ -18,9 +18,9 @@ not embed docToolchain, log4brains, CodeScene, or ArchUnit.
 
 The default `arc42` profile scores structure and decision evidence. Volatility,
 Git history, and audit readiness are excluded from its score and gate. Configure
-`review-rigor`, `architecture-type`, `c4-level`, and `deployment-view` in the Action.
+`review-rigor`, `c4-level`, and `deployment-view` in the Action.
 See [review profiles and RAG boundaries](docs/review-profiles.md) for evidence
-mapping, examples, and migration from the `extended` legacy rubric. These inputs are available starting with v0.2.0; v0.1.0 behavior is unchanged.
+mapping, examples, and migration from the `extended` legacy rubric. The strategic baseline is a review policy. Tactical exceptions and transition plans are assessed per ADR, not selected in the workflow. See the migration notes before upgrading from v0.2.x.
 
 ## Quick start
 
@@ -65,7 +65,6 @@ jobs:
           adr-path: docs/adr
           review-profile: arc42
           review-rigor: standard
-          architecture-type: tactical
           c4-level: component
           deployment-view: required
           min-tqi: '70'
@@ -125,7 +124,6 @@ human summary and detailed report files. It does not modify the saved JSON, clai
 | `min-tqi` | empty | Override config minimum; default config is 0 |
 | `review-profile` | empty → arc42 | `arc42` or legacy `extended` |
 | `review-rigor` | empty → standard | `advisory`, `standard`, or `strict` |
-| `architecture-type` | empty → tactical | `strategic`, `tactical`, or `transition` |
 | `c4-level` | empty → component | `context`, `container`, or `component` |
 | `deployment-view` | empty → required | `required` or `not-required` |
 | `fail-on-severity` | empty | Override `none`, `critical`, `high`, `medium`, or `low` |

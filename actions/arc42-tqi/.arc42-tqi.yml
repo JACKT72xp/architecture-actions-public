@@ -3,6 +3,5 @@ version: 1
 review:
   profile: arc42
   rigor: standard
-  architecture_type: tactical
   c4_level: component
   deployment_view: required

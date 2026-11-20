@@ -75,7 +75,6 @@ limits:
 review:
   profile: arc42
   rigor: standard
-  architecture_type: tactical
   c4_level: component
   deployment_view: required
   evidence:
@@ -84,8 +83,3 @@ review:
     component: []
     deployment: []
     strategic_intent: []
-    tactical_scope: []
-    current_state: []
-    target_state: []
-    migration_plan: []
-    rollback: []

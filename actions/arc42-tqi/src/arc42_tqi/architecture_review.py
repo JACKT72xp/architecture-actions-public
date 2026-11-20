@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 from typing import Any
 
+from .decision_review import assess_decisions
 from .documents import PLACEHOLDER
 from .models import DocumentTree, Finding, finding
 
@@ -19,17 +20,12 @@ EXPECTATIONS = {
     "migration_plan": (6, "Transition stages", "Document intermediate states, dependency order, coexistence, data migration, and entry/exit criteria for each stage."),
     "rollback": (11, "Rollback and transition risks", "Record cutover failure conditions, rollback or forward-recovery steps, risk owners, and acceptance criteria."),
 }
-TYPE_CHECKS = {
-    "strategic": ["strategic_intent", "target_state"],
-    "tactical": ["tactical_scope"],
-    "transition": ["current_state", "target_state", "migration_plan", "rollback"],
-}
 
 
-def assess_review(tree: DocumentTree, config: dict[str, Any]) -> tuple[dict[str, Any], list[Finding]]:
+def assess_review(tree: DocumentTree, config: dict[str, Any], adrs: list[dict[str, Any]]) -> tuple[dict[str, Any], list[Finding]]:
     review = config["review"]
-    result: dict[str, Any] = {key: review[key] for key in ("profile", "rigor", "architecture_type", "c4_level", "deployment_view")}
-    result.update(status="not_evaluated", checks=[])
+    result: dict[str, Any] = {key: review[key] for key in ("profile", "rigor", "c4_level", "deployment_view")}
+    result.update(status="not_evaluated", checks=[], baseline="strategic", decision_assessments=[])
     if review["profile"] == "extended":
         result["reason"] = "Legacy rubric selected; arc42 review expectations are not evaluated."
         return result, []
@@ -37,7 +33,7 @@ def assess_review(tree: DocumentTree, config: dict[str, Any]) -> tuple[dict[str,
     required = levels[:levels.index(review["c4_level"]) + 1]
     if review["deployment_view"] == "required":
         required.append("deployment")
-    required += TYPE_CHECKS[review["architecture_type"]]
+    required.append("strategic_intent")
     findings: list[Finding] = []
     for name in required:
         section, title, guidance = EXPECTATIONS[name]
@@ -65,6 +61,9 @@ def assess_review(tree: DocumentTree, config: dict[str, Any]) -> tuple[dict[str,
             findings.append(finding("structure", severity, "", section, "REVIEW_" + name.upper(),
                                     f"{title}: evidence needs review", f"{len(sources)} valid references; {len(rejected)} rejected references",
                                     guidance + f" Map inspected file/line ranges in review.evidence.{name}; do not add artificial text to satisfy the checker."))
+    assessments, decision_findings = assess_decisions(tree, adrs, review["rigor"])
+    result["decision_assessments"] = assessments
+    findings.extend(decision_findings)
     result["status"] = "review_required"
     result["reason"] = "Checks validate declared source availability only. A reviewer must assess whether the evidence satisfies each expectation."
     return result, findings
@@ -73,6 +72,10 @@ def assess_review(tree: DocumentTree, config: dict[str, Any]) -> tuple[dict[str,
 def finding_detail(item: dict[str, Any]) -> tuple[str, str, str]:
     """Return a review implication, a concrete review task, and completion criteria."""
     rule = item["rule_id"]
+    if rule == "REVIEW_DECISION_EXCEPTION":
+        return ("A documented compromise or intermediate state lacks some supporting rationale or follow-up evidence. The choice itself is not a quality defect.",
+                item["remediation"],
+                "A reviewer confirms the decision's alignment, rationale, consequences, and applicable review, exit, and recovery conditions; readable text alone is not approval.")
     if rule.startswith("REVIEW_"):
         key = rule.removeprefix("REVIEW_").lower()
         expectation = EXPECTATIONS.get(key)
